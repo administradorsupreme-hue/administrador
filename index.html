@@ -3109,6 +3109,8 @@ async function selectPixPayment(skipKeyChoice=false){
         total:getPixChargeTotal(),
         nick,
         name:nick,
+        customerName:String(window.currentUser?.name||window.currentUser?.displayName||window.currentUser?.full_name||nick||'Cliente'),
+        customerEmail:String(window.currentUser?.email||''),
         roblox:getRobloxProfile(),
         pixKey:SELECTED_PIX_KEY
       })
@@ -3720,7 +3722,9 @@ document.addEventListener('DOMContentLoaded',()=>{refreshServerStock();setInterv
      if(!logged){window.showCustomerLoginNotice();return;}
      document.getElementById('customerTicketOverlay').style.display='block';
      const [t,o]=await Promise.all([j('tickets'),j('my-orders')]);
-     render(t.tickets||[],o.orders||[]);
+     const openTickets=(t.tickets||[]).filter(x=>!['resolved','closed'].includes(String(x.status||x.customerStatus||'').toLowerCase()));
+     __customerTicketSignature=''; render(openTickets,o.orders||[]);
+     __customerTicketSignature=customerTicketSignature(openTickets,o.orders||[]);
    }catch(e){
      const msg=String(e&&e.message||'');
      if(/login|sessão|autentica/i.test(msg)){window.showCustomerLoginNotice();return;}
@@ -3729,22 +3733,40 @@ document.addEventListener('DOMContentLoaded',()=>{refreshServerStock();setInterv
  };
  window.closeCustomerTickets=function(){document.getElementById('customerTicketOverlay').style.display='none'};
  function render(ts,orders){const delivered=(orders||[]).filter(o=>String(o.status||'').toLowerCase()==='delivered');const reviewBox=delivered.length?`<div class="ct-ticket"><b>⭐ Avaliar compras entregues</b><p class="muted">Depois que o pedido for marcado como entregue, você pode deixar sua nota e comentário.</p>${delivered.map(o=>`<div class="ct-actions" style="justify-content:space-between;margin-top:8px"><span class="muted">${esc(o.order_key||o.id)} — ${esc((o.items||[]).map(i=>i.name).join(', '))}</span><button onclick="openReviewModal('${esc(o.id)}')">Avaliar</button></div>`).join('')}</div>`:'';document.getElementById('customerTicketCreate').innerHTML=(orders||[]).length?`${reviewBox}<div class="ct-ticket"><b>Abrir ticket sobre uma compra</b><select id="ctOrder">${orders.map(o=>`<option value="${esc(o.id)}">${esc(o.order_key||o.id)} — ${esc((o.items||[]).map(i=>i.name).join(', '))}</option>`).join('')}</select><input id="ctSubject" placeholder="Assunto"><textarea id="ctMessage" placeholder="Explique o que aconteceu"></textarea><div class="ct-actions"><button onclick="createCustomerTicket()">Abrir ticket</button></div></div>`:'<p class="muted">Você ainda não possui compras registradas.</p>';document.getElementById('customerTickets').innerHTML=ts.map(t=>`<div class="ct-ticket"><b>${esc(t.subject)}</b> <span class="pill">${esc(t.status)}</span><div class="muted">Pedido: ${esc(t.order_key||t.order_id)}</div>${(t.messages||[]).map(m=>`<div class="ct-msg ${m.sender_role==='owner'?'owner':''}"><b>${esc(m.name)}</b><br>${esc(m.message)}<div class="muted">${new Date(m.createdAt).toLocaleString('pt-BR')}</div></div>`).join('')}<textarea id="ctReply-${esc(t.id)}" placeholder="Responder..."></textarea><div class="ct-actions"><button onclick="replyCustomerTicket('${esc(t.id)}')">Enviar resposta</button></div></div>`).join('')||'<p class="muted">Nenhum ticket aberto.</p>'}
- window.createCustomerTicket=async function(){try{await j('tickets',{method:'POST',body:JSON.stringify({orderId:ctOrder.value,subject:ctSubject.value,message:ctMessage.value})});openCustomerTickets()}catch(e){alert(e.message)}};
- window.replyCustomerTicket=async function(id){const input=document.getElementById('ctReply-'+id);const m=input?.value.trim();if(!m)return;try{await j('tickets/reply',{method:'POST',body:JSON.stringify({ticketId:id,message:m})});if(input)input.value='';await refreshCustomerTickets(true)}catch(e){alert(e.message)}};
+ window.createCustomerTicket=async function(){try{await j('tickets',{method:'POST',body:JSON.stringify({orderId:ctOrder.value,subject:ctSubject.value,message:ctMessage.value,status:'open',customerStatus:'open'})});openCustomerTickets()}catch(e){alert(e.message)}};
+ window.replyCustomerTicket=async function(id){const input=document.getElementById('ctReply-'+id);const m=input?.value.trim();if(!m)return;try{await j('tickets/reply',{method:'POST',body:JSON.stringify({ticketId:id,message:m,status:'open',customerStatus:'open'})});if(input)input.value='';await refreshCustomerTickets(true)}catch(e){alert(e.message)}};
  let __customerTicketSyncBusy=false;
+ let __customerTicketSignature='';
+ function customerTicketSignature(ts,orders){
+   return JSON.stringify({
+     tickets:(ts||[]).map(t=>({id:t.id,status:t.status,updated:t.updatedAt||t.updated_at,m:(t.messages||[]).map(m=>({id:m.id,created:m.createdAt||m.created_at,message:m.message,sender:m.sender_role}))})),
+     orders:(orders||[]).map(o=>({id:o.id,status:o.status,updated:o.updatedAt||o.updated_at}))
+   });
+ }
  async function refreshCustomerTickets(keepDraft=false){
    const overlay=document.getElementById('customerTicketOverlay');
    if(!overlay || overlay.style.display==='none' || __customerTicketSyncBusy)return;
    __customerTicketSyncBusy=true;
    try{
-     const draft={};
-     if(keepDraft){document.querySelectorAll('[id^="ctReply-"]').forEach(x=>draft[x.id]=x.value)}
      const [t,o]=await Promise.all([j('tickets'),j('my-orders')]);
-     render(t.tickets||[],o.orders||[]);
-     Object.entries(draft).forEach(([id,v])=>{const x=document.getElementById(id);if(x)x.value=v});
+     const ts=(t.tickets||[]).filter(x=>!['resolved','closed'].includes(String(x.status||x.customerStatus||'').toLowerCase()));
+     const orders=o.orders||[];
+     const sig=customerTicketSignature(ts,orders);
+     if(sig!==__customerTicketSignature){
+       const draft={};
+       document.querySelectorAll('[id^="ctReply-"]').forEach(x=>draft[x.id]=x.value);
+       const focusedId=document.activeElement?.id||'';
+       const start=document.activeElement?.selectionStart;
+       const end=document.activeElement?.selectionEnd;
+       render(ts,orders);
+       Object.entries(draft).forEach(([id,v])=>{const x=document.getElementById(id);if(x)x.value=v});
+       const focused=document.getElementById(focusedId);
+       if(focused){focused.focus();try{focused.setSelectionRange(start??focused.value.length,end??focused.value.length)}catch{}}
+       __customerTicketSignature=sig;
+     }
    }catch(e){}finally{__customerTicketSyncBusy=false}
  }
- setInterval(()=>refreshCustomerTickets(true),1200);
+ setInterval(()=>refreshCustomerTickets(true),700);
  async function refreshCatalog(){try{const d=await j('catalog');const active=d.products||[];active.forEach(p=>{const old=products[p.product_id]||{};Object.assign(old,{name:p.name,price:Number(p.price),old:Number(p.old),image:p.image,stock:p.stock,catalog:p.catalog});products[p.product_id]=old;const btn=document.querySelector(`button[onclick="buyNow('${CSS.escape(p.product_id)}')"]`);if(btn){const card=btn.closest('.card');if(card){const im=card.querySelector('.product-img'),n=card.querySelector('.name'),pr=card.querySelector('.price'),oldEl=card.querySelector('.old'),st=card.querySelector('.stock b');if(im && im.classList.contains('allow-product-image')){im.src=p.image||'';im.classList.toggle('has-product-image',!!String(p.image||'').trim());}if(n)n.textContent=p.name;if(pr)pr.innerHTML=Number(p.price).toFixed(2).replace('.',',')+'<img class="price-pix-big" src="images/pix-new.png" alt="PIX">';if(oldEl)oldEl.textContent='R$ '+Number(p.old).toFixed(2).replace('.',',');if(st)st.textContent=Number(p.stock).toLocaleString('pt-BR')}}});const existing=new Set([...document.querySelectorAll("button[onclick*='buyNow']")].map(b=>(b.getAttribute('onclick').match(/buyNow\('([^']+)'\)/)||[])[1]));active.filter(p=>!existing.has(p.product_id)).forEach(p=>{const sec=document.getElementById(p.catalog)||document.getElementById('produtos');const grid=sec?.querySelector('.products');if(!grid)return;const a=document.createElement('article');a.className='card product-click';a.innerHTML=`<img class="product-img allow-product-image ${p.image?'has-product-image':''}" src="${esc(p.image||'')}" alt="${esc(p.name)}"><div class="info"><div class="name">${esc(p.name)}</div><div class="prices"><span class="old">R$ ${Number(p.old).toFixed(2).replace('.',',')}</span></div><div class="price">${Number(p.price).toFixed(2).replace('.',',')}<img class="price-pix-big" src="images/pix-new.png" alt="PIX"></div><div class="pix"></div><div class="stock">📦 Estoque: <b>${Number(p.stock).toLocaleString('pt-BR')}</b></div><button class="buy" onclick="buyNow('${esc(p.product_id)}')"><span class="buy-cart-icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none"><path d="M8 10h7l6 31h30l7-23H19" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 51a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm25 0a4 4 0 1 0 0 8 4 4 0 0 0-4-4 4 4 0 0 0 4-4Z" fill="currentColor"/><path d="M24 32h25" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></span><span class="buy-cart-label">COMPRAR AGORA</span></button></div>`;grid.appendChild(a)});if(typeof addProductDetails==='function')addProductDetails();}catch(e){console.warn('Catálogo:',e.message)}}
  async function myOrders(){try{const d=await j('my-orders');return d.orders||[]}catch{return []}}
  document.addEventListener('DOMContentLoaded',()=>{
@@ -7174,4 +7196,11 @@ header .side-menu-btn span{
     flex-basis:4px!important;
   }
 }
+</style>
+
+<style id="kaneki-three-dots-user-size-final">
+/* Os três pontinhos do menu ficam um pouco maiores e mais fáceis de tocar. */
+header .nav-actions .side-menu-btn{gap:2px!important;}
+header .nav-actions .side-menu-btn span{width:7px!important;height:7px!important;min-width:7px!important;min-height:7px!important;max-width:7px!important;max-height:7px!important;flex:0 0 7px!important;border-radius:50%!important;}
+@media(max-width:700px){header .nav-actions .side-menu-btn{gap:2px!important}header .nav-actions .side-menu-btn span{width:6px!important;height:6px!important;min-width:6px!important;min-height:6px!important;max-width:6px!important;max-height:6px!important;flex:0 0 6px!important}}
 </style>

@@ -71,6 +71,9 @@ html{scroll-behavior:auto!important;overflow-anchor:none!important}
 <style id="admin-access-fix">
 .admin-access-note{margin:10px 0 14px;padding:12px 14px;border:1px solid rgba(226,27,35,.35);border-radius:12px;background:#160b0e;color:#ddd}.admin-access-add button{width:100%}.admin-user-row button{white-space:nowrap}.admin-users-column h3{margin-top:0}.admin-user-email{font-size:11px;color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:360px}@media(max-width:700px){.admin-user-row{align-items:flex-start;flex-direction:column}.admin-user-row button{width:100%}}
 </style>
+<style id="admin-live-order-polish">
+.order-nick{display:inline-block;margin-top:3px;color:#fff;background:#241017;border:1px solid rgba(226,27,35,.35);padding:3px 7px;border-radius:999px;font-size:11px}.order-ticket-live{display:inline-block;margin-top:4px;color:#ff9aa0;font-size:11px;font-weight:900}.order-actions-stack button{min-height:38px}
+</style>
 <style id="admin-v3-polish">
 .orders-head-polish{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:14px 16px;border:1px solid rgba(226,27,35,.28);border-radius:14px;background:linear-gradient(145deg,#140b0e,#0c0c11);margin-bottom:12px}.orders-head-polish h2{color:#fff}.orders-admin-badge{padding:9px 12px;border-radius:999px;background:#291116;border:1px solid rgba(226,27,35,.4);color:#ff8b91;font-size:11px;font-weight:900;white-space:nowrap}.orders-help-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 14px}.orders-help-grid>div{padding:12px;border:1px solid #2b252a;border-radius:12px;background:#0d0c10}.orders-help-grid b,.orders-help-grid span{display:block}.orders-help-grid span{font-size:11px;color:#999;margin-top:4px}@media(max-width:700px){.orders-head-polish{flex-direction:column}.orders-help-grid{grid-template-columns:1fr}}
 .admin-access-empty{padding:14px;border:1px dashed #4a3035;border-radius:12px;background:#0c0b0f;color:#aaa}.admin-access-empty b{display:block;color:#fff;margin-bottom:4px}
@@ -143,7 +146,12 @@ function buildFullEditor(settings={}){const el=document.getElementById('fullEdit
         const userRoutes=['admin/users','admin/customers','users'];
         for(const route of userRoutes){try{const u=await api(route);const list=u?.users||u?.customers||u?.data||[];if(Array.isArray(list)&&list.length){users=list;break}}catch(_){} }
       }
-      data={...d,users,tickets:t.tickets||[]};fillSettings(d.settings||{});fillBanner(d.settings||{});document.getElementById('commercialPixFee').value=d.settings?.pixFee||'1.49';document.getElementById('commercialWhatsapp').value=d.settings?.whatsappNumber||'5591985748541';buildFullEditor(d.settings||{});renderCategories();refreshCategorySelect();document.getElementById('msg').style.display='none';document.getElementById('app').style.display='block';document.getElementById('users').textContent=users.length;document.getElementById('orders').textContent=(d.orders||[]).length;document.getElementById('ticketsCount').textContent=(d.tickets||[]).length;renderProducts();renderTickets();renderOrders();renderAdminUsers(users);document.getElementById('adminManagement').style.display=String(me.user.role||'').toLowerCase()==='owner'?'block':'none';
+      let mergedOrders=Array.isArray(d?.orders)?[...d.orders]:[];
+      /* Alguns backends entregam pedidos aguardando PIX por uma rota separada. Tentamos
+         a rota de compras também para que o pedido apareça no painel assim que o QR é criado. */
+      const orderRoutes=['admin/orders','admin/pending-orders','admin/checkout-sessions'];
+      for(const route of orderRoutes){try{const od=await api(route);const list=od?.orders||od?.data||od?.pendingOrders||od?.sessions||[];if(Array.isArray(list)&&list.length){const seen=new Set(mergedOrders.map(x=>String(x.id||x.order_id||x.orderKey||x.order_key)));for(const item of list){const key=String(item.id||item.order_id||item.orderKey||item.order_key);if(!seen.has(key)){mergedOrders.push(item);seen.add(key)}}}}catch(_){} }
+      data={...d,orders:mergedOrders,users,tickets:t.tickets||[]};fillSettings(d.settings||{});fillBanner(d.settings||{});document.getElementById('commercialPixFee').value=d.settings?.pixFee||'1.49';document.getElementById('commercialWhatsapp').value=d.settings?.whatsappNumber||'5591985748541';buildFullEditor(d.settings||{});renderCategories();refreshCategorySelect();document.getElementById('msg').style.display='none';document.getElementById('app').style.display='block';document.getElementById('users').textContent=users.length;document.getElementById('orders').textContent=mergedOrders.length;document.getElementById('ticketsCount').textContent=(d.tickets||[]).length;renderProducts();renderTickets();renderOrders();renderAdminUsers(users);document.getElementById('adminManagement').style.display=String(me.user.role||'').toLowerCase()==='owner'?'block':'none';
       const requested=String(location.hash||'').replace(/^#/,'').trim()||'site-banner';
       if(!window.__adminInitialSectionSet){window.__adminInitialSectionSet=true;setOwnerSection(requested,false);}else{setOwnerSection(requested,false);}
       document.getElementById('logs').innerHTML=d.logs.map(l=>`<div class="msg"><b>${esc(l.action)}</b> — ${new Date(l.at).toLocaleString('pt-BR')} — ${esc(l.email||'visitante')}</div>`).join('')||'<span class="muted">Sem logs.</span>'}catch(e){document.getElementById('msg').textContent=e.message}}
@@ -237,7 +245,7 @@ function renderTickets(){
   const detail=selected?renderTicketDetail(selected):`<div class="ticket-empty-detail"><div>🎫</div><b>Selecione um ticket</b><span>Escolha uma pessoa na lista ao lado para entrar no atendimento e responder.</span></div>`;
   box.innerHTML=`<div class="tickets-manager"><aside class="tickets-list-panel"><div class="tickets-list-head"><div><b>Tickets abertos</b><small>${tickets.length} atendimento${tickets.length===1?'':'s'}</small></div></div><div class="tickets-list">${list||'<p class="muted" style="padding:18px">Nenhum ticket aberto.</p>'}</div></aside><section class="ticket-detail-panel">${detail}</section></div>`;
 }
-function openTicket(id){selectedTicketId=String(id);renderTickets();}
+function openTicket(id){selectedTicketId=String(id);__openTicketSignature='';renderTickets();syncOpenTicket();}
 function renderTicketDetail(t){
   const messages=Array.isArray(t.messages)?t.messages:[];const c=ticketCustomer(t);
   return `<div class="ticket-chat ticket-chat-selected"><div class="ticket-chat-head"><div class="ticket-chat-person"><div class="ticket-chat-avatar">${esc(c.name.slice(0,1).toUpperCase())}</div><div><b>${esc(c.name)}</b><small>${esc(c.email||'Gmail não informado')}</small></div></div><span class="ticket-chat-status">ABERTO</span></div><div class="ticket-chat-messages">${messages.map(m=>`<div class="ticket-chat-msg ${m.sender_role==='owner'?'owner':''}"><b>${esc(m.name||c.name)}</b><div>${esc(m.message)}</div></div>`).join('')||'<div class="ticket-chat-empty">Nenhuma mensagem.</div>'}</div><textarea id="reply-${esc(t.id)}" class="ticket-chat-input" placeholder="Escreva uma resposta..."></textarea><div class="ticket-chat-actions"><button onclick="reply('${esc(t.id)}')">Responder</button><button type="button" class="ticket-close-btn" onclick="closeTicket('${esc(t.id)}',this)">🔒 Fechar ticket</button></div></div>`;
@@ -264,12 +272,16 @@ function renderOrders(){
     const delivered=status==='delivered';
     const paid=['received','paid','approved','delivered'].includes(status);
     const items=(o.items||[]).map(i=>esc(i.name)+' × '+i.qty).join('<br>');
+    const roblox=o.roblox||o.roblox_profile||{};
+    const nick=o.nick||o.nickname||roblox.displayName||roblox.name||o.robloxName||'';
+    const relatedTicket=(data.tickets||[]).find(t=>String(t.order_id||t.orderId||'')===String(o.id||o.order_id||''));
+    const liveLabel=['pending','created','waiting','awaiting_payment','unpaid',''].includes(status)?'🟡 Aguardando pagamento':'🟢 '+kanekiOrderStatusLabel(status);
     return `<tr>
-      <td>${new Date(o.createdAt).toLocaleString('pt-BR')}</td>
-      <td><b>${esc(o.name||'Cliente')}</b><br>${esc(o.email||'')}</td>
+      <td>${new Date(o.createdAt||o.created_at||Date.now()).toLocaleString('pt-BR')}</td>
+      <td><b>${esc(o.name||o.email||'Cliente')}</b><br>${esc(o.email||'')}${nick?`<br><span class="order-nick">🎮 Nick: <b>${esc(nick)}</b></span>`:''}${relatedTicket?`<br><span class="order-ticket-live">🎫 Ticket aberto</span>`:''}</td>
       <td>${items||'—'}</td>
       <td>${money(o.total)}</td>
-      <td><span class="order-status-pill ${delivered?'done':paid?'paid':''}">${esc(kanekiOrderStatusLabel(status))}</span></td>
+      <td><span class="order-status-pill ${delivered?'done':paid?'paid':''}">${esc(liveLabel)}</span></td>
       <td><div class="order-actions">${delivered?'<span class="order-delivered">✓ Produto entregue</span>':`<div class="order-actions-stack"><button type="button" onclick="approveOrder('${esc(o.id)}',this)">💳 Aprovar pagamento</button><button type="button" class="secondary" onclick="approveAndDeliverOrder('${esc(o.id)}',this)">📦 Aprovar e entregar</button></div>`}</div></td>
     </tr>`;
   }).join('')||'<tr><td colspan="6">Nenhuma compra.</td></tr>';
@@ -334,6 +346,8 @@ load();
 
 /* Atualização rápida dos atendimentos: mantém a conversa aberta sincronizada sem recarregar a página. */
 let __ticketSyncBusy=false;
+let __openTicketSignature='';
+function ownerTicketSignature(t){return JSON.stringify({id:t?.id,status:t?.status,updated:t?.updatedAt||t?.updated_at,m:(t?.messages||[]).map(x=>({id:x.id,created:x.createdAt||x.created_at,message:x.message,sender:x.sender_role}))});}
 async function syncOpenTicket(){
   if(__ticketSyncBusy || !window.__adminInitialSectionSet || !selectedTicketId)return;
   __ticketSyncBusy=true;
@@ -344,16 +358,21 @@ async function syncOpenTicket(){
     if(fresh){
       const i=(data.tickets||[]).findIndex(x=>String(x.id)===String(selectedTicketId));
       if(i>=0)data.tickets[i]=fresh;else data.tickets.push(fresh);
+      const sig=ownerTicketSignature(fresh);
       const detail=document.querySelector('#tickets .ticket-detail-panel');
-      if(detail){
-        const keep=document.getElementById('reply-'+selectedTicketId)?.value||'';
+      if(detail && sig!==__openTicketSignature){
+        const inputBefore=document.getElementById('reply-'+selectedTicketId);
+        const keep=inputBefore?.value||'';
+        const focused=document.activeElement?.id==='reply-'+selectedTicketId;
+        const start=inputBefore?.selectionStart,end=inputBefore?.selectionEnd;
         const atBottom=(()=>{const box=detail.querySelector('.ticket-chat-messages');return !box||box.scrollHeight-box.scrollTop-box.clientHeight<90})();
         detail.innerHTML=renderTicketDetail(fresh);
         const input=document.getElementById('reply-'+selectedTicketId);
-        if(input){input.value=keep; if(keep)input.focus()}
+        if(input){input.value=keep;if(focused){input.focus();try{input.setSelectionRange(start??input.value.length,end??input.value.length)}catch{}}}
         if(atBottom){const box=detail.querySelector('.ticket-chat-messages');if(box)box.scrollTop=box.scrollHeight;}
+        __openTicketSignature=sig;
       }
-    }else{renderTickets()}
+    }else{renderTickets();__openTicketSignature=''}
   }catch(e){}finally{__ticketSyncBusy=false}
 }
 setInterval(syncOpenTicket,1200);
@@ -367,11 +386,14 @@ setInterval(async()=>{
       const userRoutes=['admin/users','admin/customers','users'];
       for(const route of userRoutes){try{const u=await api(route);const list=u?.users||u?.customers||u?.data||[];if(Array.isArray(list)&&list.length){users=list;break}}catch(_){} }
     }
-    data={...d,users,tickets:t.tickets||[]};
+    let mergedOrders=Array.isArray(d?.orders)?[...d.orders]:[];
+    for(const route of ['admin/orders','admin/pending-orders','admin/checkout-sessions']){try{const od=await api(route);const list=od?.orders||od?.data||od?.pendingOrders||od?.sessions||[];if(Array.isArray(list)&&list.length){const seen=new Set(mergedOrders.map(x=>String(x.id||x.order_id||x.orderKey||x.order_key)));for(const item of list){const key=String(item.id||item.order_id||item.orderKey||item.order_key);if(!seen.has(key)){mergedOrders.push(item);seen.add(key)}}}}catch(_){} }
+    data={...d,orders:mergedOrders,users,tickets:t.tickets||[]};
     document.getElementById('users').textContent=users.length;
-    document.getElementById('orders').textContent=(d.orders||[]).length;
+    document.getElementById('orders').textContent=mergedOrders.length;
     document.getElementById('ticketsCount').textContent=(d.tickets||[]).length;
-    renderTickets();renderOrders();renderAdminUsers(users);
+    if(!selectedTicketId) renderTickets(); else syncOpenTicket();
+    renderOrders();renderAdminUsers(users);
     document.getElementById('logs').innerHTML=d.logs.map(l=>`<div class="msg"><b>${esc(l.action)}</b> — ${new Date(l.at).toLocaleString('pt-BR')} — ${esc(l.email||'visitante')}</div>`).join('')||'<span class="muted">Sem logs.</span>';
   }catch(e){console.warn('Atualização automática do painel:',e.message)}
 },5000);
