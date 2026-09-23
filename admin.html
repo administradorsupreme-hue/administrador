@@ -1,0 +1,517 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>KANEKI STORE — Painel do Dono</title><style>
+*{box-sizing:border-box}body{margin:0;background:#080808;color:#f5f5f5;font:14px Arial,sans-serif}.wrap{max-width:1250px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px}.brand{font-size:27px;font-weight:900}.brand span{color:#e21b23}.muted{color:#9b969c}.btn,button{border:0;border-radius:10px;padding:10px 14px;background:#d71920;color:#fff;font-weight:800;cursor:pointer}.btn.secondary,button.secondary{background:#252329}.panel{background:#111116;border:1px solid #29252a;border-radius:16px;padding:18px;margin:16px 0}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.stat{background:#111116;border:1px solid #29252a;border-radius:14px;padding:16px}.stat b{display:block;font-size:25px;margin-bottom:5px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:12px;color:#aaa}.field input,.field select,.field textarea{background:#0a0a0d;color:#fff;border:1px solid #302c32;border-radius:9px;padding:10px}.field textarea{min-height:80px;resize:vertical}.product{display:grid;grid-template-columns:70px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #29252a}.product img{width:70px;height:70px;object-fit:cover;border-radius:10px;background:#050505}.actions{display:flex;gap:8px;flex-wrap:wrap}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:10px;border-bottom:1px solid #29252a;text-align:left;vertical-align:top}.ticket{border:1px solid #29252a;border-radius:13px;padding:13px;margin:10px 0}.msg{padding:9px 11px;border-radius:10px;background:#17171d;margin:7px 0}.msg.owner{border-left:3px solid #e21b23}.ticket textarea{width:100%;background:#0a0a0d;color:#fff;border:1px solid #302c32;border-radius:9px;padding:10px;min-height:70px}.pill{display:inline-block;padding:5px 8px;border-radius:999px;background:#242229;color:#ddd;font-size:11px}.danger{background:#5f1519!important}@media(max-width:800px){.stats,.grid{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}.product{grid-template-columns:55px 1fr}.product img{width:55px;height:55px}.product .actions{grid-column:1/-1}.table{font-size:12px;display:block;overflow:auto}}
+
+:root{--p:#e21b23}body{background:#070707;color:#fff}.brand span{color:var(--p)}.btn,button{background:var(--p)}.btn.secondary,button.secondary{background:#24232a}.panel,.stat{background:#101014;border-color:#292933}.field input,.field select,.field textarea{background:#09090c;border-color:#2e2e38}.product img{border:1px solid #2e2e38}.msg.owner{border-left-color:var(--p)}.danger{background:#4b1619!important}.field input[type=color]{height:44px;padding:4px;cursor:pointer}.field input[type=file]{font-size:12px;padding:7px}.top{position:sticky;top:0;z-index:5;padding-top:10px;background:linear-gradient(#070707 75%,transparent)}
+.owner-dashboard-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:14px 0 4px}.owner-dashboard-grid a{min-height:76px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;text-decoration:none;color:#fff;background:#111116;border:1px solid #3a2222;border-radius:12px;font-weight:900}.owner-dashboard-grid a b{font-size:20px}.owner-dashboard-grid a span{font-size:12px}.owner-dashboard-grid a:hover{border-color:#e21b23;background:#180d10;transform:translateY(-1px)}
+.admin-group{border:1px solid #292933;border-radius:16px;padding:16px;margin:14px 0;background:#0c0c10}.admin-group h3{margin:0 0 5px;font-size:18px}.admin-group>p{margin:0 0 14px}.full-editor-groups{display:block}.category-editor{border:1px solid #402323;border-radius:14px;padding:12px;margin-top:10px;background:#130b0d}.category-editor h4{margin:0 0 10px;color:#ff6b6b}.image-note{font-size:11px;color:#85818b}.toggle-row{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid #292933;border-radius:11px;background:#0a0a0e}.toggle-row input{width:auto!important;margin:0!important}.category-file-row{display:flex;gap:8px;align-items:center;margin-top:9px}.category-file-row input[type=file]{flex:1}.category-preview-wrap{margin-top:9px;width:92px;height:92px;border-radius:12px;overflow:hidden;border:1px solid #4e2020;background:#08080c}.category-preview{width:100%;height:100%;object-fit:cover;display:block}.category-editor .secondary{background:#24232a!important;color:#fff!important;border-color:#3a3540!important}
+</style>
+<style id="stock-manager-v1">
+.stock-manager{margin-top:18px;border:1px solid #3a2222;border-radius:16px;background:#0b0b10;padding:16px}.stock-manager-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-end;margin-bottom:14px}.stock-manager-head h3{margin:0 0 5px;font-size:18px}.stock-manager-head p{margin:0}.stock-manager-tools{display:flex;gap:8px;min-width:330px}.stock-manager-tools input,.stock-manager-tools select{background:#09090d;color:#fff;border:1px solid #302c32;border-radius:10px;padding:10px;box-sizing:border-box}.stock-manager-tools input{width:190px}.stock-quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.stock-quick-card{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:#0e0d12;border:1px solid #29242a;border-radius:13px;padding:11px}.stock-quick-main{min-width:0}.stock-quick-name{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stock-quick-meta{font-size:11px;color:#918c95;margin-top:3px}.stock-quick-value{display:flex;align-items:center;gap:7px}.stock-quick-value input{width:76px;text-align:center;background:#09090d;color:#fff;border:1px solid #3a3037;border-radius:9px;padding:9px;font-weight:900}.stock-quick-actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}.stock-quick-actions button{padding:7px 9px;border-radius:8px;font-size:11px;font-weight:900}.stock-quick-actions .stock-save{background:#1d7d43!important}.stock-zero{border-color:#7e2026}.stock-unlimited{border-color:#3d3560}.stock-category-title{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:9px 2px 3px;border-bottom:1px solid #272128;margin-top:5px}.stock-category-title b{font-size:14px}.stock-category-title span{font-size:11px;color:#8f8a92}@media(max-width:800px){.stock-manager-head{display:block}.stock-manager-tools{min-width:0;margin-top:12px;display:grid;grid-template-columns:1fr 1fr}.stock-manager-tools input{width:auto}.stock-quick-grid{grid-template-columns:1fr}.stock-quick-card{grid-template-columns:1fr}.stock-quick-value{justify-content:space-between}}
+</style>
+<style id="admin-v24-compact">
+:root{--p:#e21b23}body{background:#07070b!important}.wrap{max-width:1180px!important;padding:16px!important}.panel{border-color:#3a2222!important;border-radius:14px!important;padding:14px!important;margin:12px 0!important}.admin-group{border-color:#3a2222!important;background:#0b0b10!important;border-radius:13px!important;padding:13px!important;margin:10px 0!important}.admin-group h3{font-size:16px!important}.field input,.field select,.field textarea{padding:9px!important;border-radius:8px!important}.category-editor{border-color:#4e2020!important;background:#0d0a13!important}.btn,button{background:#e21b23!important}.btn.secondary,button.secondary{background:#24232a!important}.product{padding:9px 0!important}.top{padding-top:7px!important}
+</style>
+<script>
+/* KANEKI STORE — configuração pública do Supabase.
+   Esta chave é uma Publishable Key e pode ficar no frontend.
+   NUNCA coloque SUPABASE_SERVICE_ROLE_KEY aqui. */
+window.KANEKI_SUPABASE = Object.freeze({
+  url: 'https://stisctpzqcemrxrwsgvo.supabase.co',
+  publishableKey: 'sb_publishable_LjOT5bl5uRgDtOhZ7K2gmw_k6EPnd08'
+});
+setInterval(()=>{expireStaleOrders().catch(()=>{})},15000);
+</script>
+
+<style id="admin-single-section-fix">
+#app > .panel{display:none!important}
+#app > .panel.admin-section-visible{display:block!important}
+#app > .panel.admin-section-hidden{display:none!important}
+</style>
+<style id="owner-navigation-v1">
+/* Painel do dono: navegação por telas */
+.owner-dashboard-grid{position:sticky;top:10px;z-index:20;background:rgba(7,7,11,.96);backdrop-filter:blur(12px);padding:12px;border:1px solid #292933;border-radius:18px;box-shadow:0 14px 35px rgba(0,0,0,.28);margin-bottom:18px}
+.owner-dashboard-grid a{min-height:76px;display:flex;flex-direction:column;justify-content:center;gap:5px}
+.owner-dashboard-grid a.active{border-color:#e21b23;background:linear-gradient(180deg,#211014,#120a0d);box-shadow:0 0 0 1px rgba(226,27,35,.16)}
+.owner-dashboard-grid a.active b{transform:scale(1.08)}
+.admin-section-nav{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px}
+.admin-section-nav .back-dashboard{font-weight:800}
+.admin-section-nav .section-title{font-size:13px;color:#aaa4ad}
+.admin-section-hidden{display:none!important}
+.admin-section-visible{display:block!important}
+.panel.admin-section-visible{scroll-margin-top:105px}
+@media(max-width:700px){
+  .owner-dashboard-grid{position:relative;top:auto;grid-template-columns:repeat(2,1fr)}
+  .owner-dashboard-grid a{min-height:68px}
+}
+</style>
+<style id="product-manager-v2">
+.product-manager-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px;border:1px solid #3a2222;border-radius:14px;background:linear-gradient(145deg,#130b0d,#0b0b10);margin:14px 0}.product-filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin:12px 0}.product-form-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;padding:11px 13px;border:1px solid #292933;border-radius:11px;background:#0b0b10}.product-form-title b{display:block;font-size:15px}.product-form-title .muted{display:block;font-size:11px;margin-top:3px}.product-image-preview-wrap{width:100px;height:100px;margin-top:8px;border:1px solid #3a2222;border-radius:12px;overflow:hidden;background:#07070b}.product-image-preview-wrap img{width:100%;height:100%;object-fit:cover;display:block}.product-list-category{margin:18px 0 8px;padding:10px 12px;border:1px solid #3a2222;border-radius:11px;background:#120b0d;display:flex;align-items:center;justify-content:space-between;gap:10px}.product-list-category h3{margin:0;font-size:16px}.product-count{font-size:11px;color:#aaa;padding:5px 8px;border-radius:999px;background:#24232a}.product-card{display:grid;grid-template-columns:82px minmax(0,1fr) auto;gap:13px;align-items:center;padding:12px;margin:8px 0;border:1px solid #292933;border-radius:13px;background:#0c0c10}.product-card:hover{border-color:#5b2a2d}.product-card-img{width:82px;height:82px;object-fit:cover;border-radius:11px;background:#050505;border:1px solid #2e2e38}.product-card-info{min-width:0}.product-card-title{font-weight:900;font-size:15px}.product-card-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:5px}.product-card-desc{color:#aaa;font-size:12px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.product-status-active{color:#65e68a}.product-status-inactive{color:#ff8585}.product-card-actions{justify-content:flex-end}.product-card-actions button{min-width:112px}.product-empty{padding:18px;text-align:center;border:1px dashed #39343d;border-radius:12px;color:#999}.product-section-note{margin-top:8px;color:#777;font-size:11px}@media(max-width:800px){.product-manager-head{align-items:flex-start;flex-direction:column}.product-filters{grid-template-columns:1fr}.product-form-title{align-items:flex-start;flex-direction:column}.product-card{grid-template-columns:64px minmax(0,1fr)}.product-card-img{width:64px;height:64px}.product-card-actions{grid-column:1/-1;justify-content:stretch}.product-card-actions button{flex:1}}
+</style>
+<style id="admin-no-edit-jump">
+html{scroll-behavior:auto!important;overflow-anchor:none!important}
+#app input:focus,#app select:focus,#app textarea:focus{scroll-margin-top:120px!important}
+.product-card-actions button,.actions button{scroll-margin-top:120px!important}
+</style>
+
+<style id="kaneki-ticket-chat-orders-v27">
+#tickets{display:grid;gap:16px}
+.ticket-chat{background:linear-gradient(145deg,#17090d,#0d0b10);border:1px solid rgba(226,27,35,.38);border-radius:20px;overflow:hidden;box-shadow:0 14px 40px rgba(0,0,0,.25)}
+.ticket-chat.is-closed{opacity:.82}
+.ticket-chat-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 17px;background:linear-gradient(90deg,#2a0d12,#160b0e);border-bottom:1px solid rgba(226,27,35,.22)}
+.ticket-chat-person{display:flex;align-items:center;gap:10px}.ticket-chat-avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#e21b23;color:#fff;font-weight:1000}.ticket-chat-person b{display:block;font-size:15px}.ticket-chat-person small{display:block;color:#a99ca0;margin-top:2px}.ticket-chat-status{font-size:10px;font-weight:1000;letter-spacing:1px;color:#ff8b91}
+.ticket-chat-messages{padding:14px;max-height:360px;overflow:auto;display:grid;gap:8px}.ticket-chat-msg{max-width:88%;padding:10px 12px;border-radius:14px 14px 14px 5px;background:#19141a;border:1px solid #32242a;color:#fff;line-height:1.4}.ticket-chat-msg.owner{margin-left:auto;border-radius:14px 14px 5px 14px;background:#3a1016;border-color:rgba(226,27,35,.42)}.ticket-chat-msg b{display:block;color:#ff7b83;font-size:11px;margin-bottom:3px}.ticket-chat-empty{color:#777;padding:18px;text-align:center}.ticket-chat-input{width:calc(100% - 28px);margin:0 14px 10px;min-height:72px;resize:vertical;background:#09090c;color:#fff;border:1px solid #3a2b30;border-radius:12px;padding:11px;box-sizing:border-box}.ticket-chat-actions{display:flex;gap:8px;padding:0 14px 14px}.ticket-chat-actions button{flex:1}.ticket-chat-actions .ticket-close-btn{background:#7e121a!important;color:#fff!important;border-color:#c91c28!important}.ticket-chat-actions .ticket-close-btn:disabled{opacity:.75}
+.order-actions{display:flex;gap:7px;min-width:180px}.order-actions button{padding:8px 10px;border-radius:9px;font-size:12px;font-weight:900}.order-delivered{display:inline-flex;align-items:center;padding:8px 10px;border-radius:9px;background:#12351d;color:#78ef98;font-size:12px;font-weight:900}.order-status-pill{display:inline-block;padding:6px 9px;border-radius:999px;background:#30252a;color:#ddd;font-size:11px;font-weight:800}.order-status-pill.paid{background:#342914;color:#ffd779}.order-status-pill.done{background:#12351d;color:#78ef98}.order-status-pill.expired{background:#3a1b1d;color:#ff8b91}.order-expired-row{opacity:.72}
+@media(max-width:800px){.order-actions{min-width:0}.order-actions button{width:100%}.table{min-width:760px}}
+</style>
+<style id="inventory-account-manager">
+.inventory-account-box{margin-top:10px;padding:10px;border:1px solid #2d272d;border-radius:11px;background:#09090d}.inventory-account-box h4{margin:0 0 8px;font-size:12px}.inventory-account-form{display:grid;grid-template-columns:1fr 1fr auto;gap:6px}.inventory-account-form input{min-width:0;background:#07070a;color:#fff;border:1px solid #35303a;border-radius:8px;padding:8px}.inventory-account-form button{padding:8px 10px;border-radius:8px}.inventory-account-list{margin-top:8px;display:grid;gap:5px}.inventory-account-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 8px;border-radius:8px;background:#111016;border:1px solid #26212a;font-size:11px}.inventory-account-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.inventory-account-row button{padding:5px 7px!important;font-size:10px!important}.inventory-account-note{font-size:10px;color:#918c95;margin-top:7px}
+@media(max-width:700px){.inventory-account-form{grid-template-columns:1fr 1fr}.inventory-account-form button{grid-column:1/-1}}
+</style>
+<style id="admin-restored-controls">
+.order-actions-stack{display:flex;flex-direction:column;gap:7px;min-width:180px}.order-actions-stack button{width:100%}.order-actions-stack .secondary{background:#24232a!important;color:#fff!important;border-color:#3a3540!important}
+#adminManagement{display:block!important}
+</style>
+
+<style id="admin-access-and-ticket-list-v2">
+.admin-access-toolbar{display:grid;grid-template-columns:1fr 1.15fr;gap:18px;align-items:end;margin-bottom:18px}.admin-access-add{display:grid;grid-template-columns:1fr;gap:8px}.admin-access-add input,.admin-access-add select{width:100%;box-sizing:border-box;background:#0a0a0d;color:#fff;border:1px solid #302c32;border-radius:10px;padding:11px}.admin-users-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.admin-users-column{background:#0d0c10;border:1px solid #2c252b;border-radius:14px;padding:14px}.admin-user-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #262126}.admin-user-row:last-child{border-bottom:0}.admin-user-main{display:flex;align-items:center;gap:10px;min-width:0}.admin-user-main>div:last-child{min-width:0}.admin-user-main .muted{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.admin-user-avatar,.ticket-list-avatar{width:36px;height:36px;min-width:36px;border-radius:50%;display:grid;place-items:center;background:#e21b23;color:#fff;font-weight:900}.tickets-manager{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:14px;min-height:430px}.tickets-list-panel,.ticket-detail-panel{border:1px solid #2d252a;border-radius:16px;background:#0c0b0f;overflow:hidden}.tickets-list-head{padding:14px 16px;border-bottom:1px solid #292228}.tickets-list-head b,.tickets-list-head small{display:block}.tickets-list-head small{color:#8f868b;margin-top:3px}.tickets-list{padding:8px;display:grid;gap:7px;max-height:540px;overflow:auto}.ticket-list-item{width:100%;display:flex;align-items:center;gap:10px;text-align:left;background:#141116!important;color:#fff!important;border:1px solid #282129!important;border-radius:12px;padding:10px!important;cursor:pointer}.ticket-list-item:hover,.ticket-list-item.active{background:#21141a!important;border-color:#e21b23!important}.ticket-list-info{min-width:0;flex:1}.ticket-list-info b,.ticket-list-info small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ticket-list-info small{color:#91878c;font-size:11px;margin-top:2px}.ticket-list-enter{font-size:11px;font-weight:900;color:#ff6971;white-space:nowrap}.ticket-empty-detail{height:100%;min-height:430px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#8f868b;gap:7px;padding:20px}.ticket-empty-detail div{font-size:38px}.ticket-empty-detail b{color:#fff;font-size:17px}.ticket-detail-panel .ticket-chat{height:100%;border:0;border-radius:0;box-shadow:none}.ticket-detail-panel .ticket-chat-messages{max-height:330px}.ticket-chat-selected .ticket-chat-head{position:sticky;top:0;z-index:2}
+@media(max-width:800px){.admin-access-toolbar,.admin-users-grid,.tickets-manager{grid-template-columns:1fr}.tickets-list{max-height:300px}.ticket-detail-panel{min-height:430px}}
+</style>
+<style id="admin-access-fix">
+.admin-access-note{margin:10px 0 14px;padding:12px 14px;border:1px solid rgba(226,27,35,.35);border-radius:12px;background:#160b0e;color:#ddd}.admin-access-add button{width:100%}.admin-user-row button{white-space:nowrap}.admin-users-column h3{margin-top:0}.admin-user-email{font-size:11px;color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:360px}@media(max-width:700px){.admin-user-row{align-items:flex-start;flex-direction:column}.admin-user-row button{width:100%}}
+</style>
+<style id="admin-live-order-polish">
+.order-nick{display:inline-block;margin-top:3px;color:#fff;background:#241017;border:1px solid rgba(226,27,35,.35);padding:3px 7px;border-radius:999px;font-size:11px}.order-ticket-live{display:inline-block;margin-top:4px;color:#ff9aa0;font-size:11px;font-weight:900}.order-actions-stack button{min-height:38px}
+</style>
+<style id="admin-v3-polish">
+.orders-head-polish{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:14px 16px;border:1px solid rgba(226,27,35,.28);border-radius:14px;background:linear-gradient(145deg,#140b0e,#0c0c11);margin-bottom:12px}.orders-head-polish h2{color:#fff}.orders-admin-badge{padding:9px 12px;border-radius:999px;background:#291116;border:1px solid rgba(226,27,35,.4);color:#ff8b91;font-size:11px;font-weight:900;white-space:nowrap}.orders-help-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 14px}.orders-help-grid>div{padding:12px;border:1px solid #2b252a;border-radius:12px;background:#0d0c10}.orders-help-grid b,.orders-help-grid span{display:block}.orders-help-grid span{font-size:11px;color:#999;margin-top:4px}@media(max-width:700px){.orders-head-polish{flex-direction:column}.orders-help-grid{grid-template-columns:1fr}}
+.admin-access-empty{padding:14px;border:1px dashed #4a3035;border-radius:12px;background:#0c0b0f;color:#aaa}.admin-access-empty b{display:block;color:#fff;margin-bottom:4px}
+</style>
+<style id="kaneki-custom-dialog-style">
+#kanekiDialogOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.76);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);z-index:2147483000}
+#kanekiDialogOverlay.show{display:flex;animation:kanekiDialogFade .18s ease-out}
+.kaneki-dialog-card{width:min(450px,calc(100vw - 32px));position:relative;overflow:hidden;border:1px solid rgba(255,70,70,.52);border-radius:22px;background:linear-gradient(145deg,#180708 0%,#0b0b0d 70%,#11090a 100%);box-shadow:0 28px 90px rgba(0,0,0,.78),0 0 48px rgba(226,27,35,.22);color:#fff;text-align:center;padding:30px 28px 25px;animation:kanekiDialogPop .23s cubic-bezier(.2,.8,.2,1)}
+.kaneki-dialog-card::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,#790d13,#e21b23,#ff666b,#e21b23,#790d13)}
+.kaneki-dialog-glow{position:absolute;width:170px;height:170px;left:50%;top:-115px;transform:translateX(-50%);background:rgba(226,27,35,.35);filter:blur(38px);pointer-events:none}
+.kaneki-dialog-icon{position:relative;width:64px;height:64px;margin:0 auto 17px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#f02d35,#9d1118);border:1px solid rgba(255,255,255,.18);box-shadow:0 11px 32px rgba(226,27,35,.38);font-size:29px;font-weight:900;color:#fff}
+.kaneki-dialog-title{position:relative;margin:0 0 9px;font-size:22px;font-weight:900;letter-spacing:.2px}.kaneki-dialog-message{position:relative;margin:0 auto;color:#d4d1d5;font-size:15px;line-height:1.58;max-width:370px;white-space:pre-wrap;word-break:break-word}.kaneki-dialog-actions{position:relative;margin-top:24px;display:flex;justify-content:center;gap:10px}
+.kaneki-dialog-btn{min-width:120px;height:46px;padding:0 22px;border:1px solid #e21b23!important;border-radius:12px;background:linear-gradient(135deg,#e21b23,#b91820)!important;color:#fff!important;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 10px 27px rgba(226,27,35,.28)!important;transition:transform .15s ease,box-shadow .15s ease,filter .15s ease}
+.kaneki-dialog-btn:hover{transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 13px 31px rgba(226,27,35,.4)!important}.kaneki-dialog-btn:active{transform:translateY(0)}
+.kaneki-dialog-btn.secondary{background:#211d20!important;border-color:#4a3b3e!important;color:#eee!important;box-shadow:none!important}.kaneki-dialog-btn.secondary:hover{box-shadow:0 8px 20px rgba(0,0,0,.3)!important}
+@keyframes kanekiDialogFade{from{opacity:0}to{opacity:1}}@keyframes kanekiDialogPop{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:480px){#kanekiDialogOverlay{padding:16px}.kaneki-dialog-card{padding:27px 20px 22px;border-radius:19px}.kaneki-dialog-title{font-size:20px}.kaneki-dialog-message{font-size:14px}.kaneki-dialog-actions{flex-direction:column-reverse}.kaneki-dialog-btn{width:100%}}
+</style>
+</head><body><div class="wrap"><div class="top"><div><div class="brand">KANEKI <span>STORE</span></div><div class="muted">Painel privado do dono</div></div><a class="btn secondary" href="/">← Voltar para loja</a></div><div id="msg" class="muted">Carregando...</div><main id="app" style="display:none"><div class="stats"><div class="stat"><b id="users">0</b><span class="muted">Usuários</span></div><div class="stat"><b id="orders">0</b><span class="muted">Pedidos</span></div><div class="stat"><b id="ticketsCount">0</b><span class="muted">Tickets</span></div></div><div class="owner-dashboard-grid" id="ownerNavigation">
+<a href="#site-banner" data-section="site-banner"><b>🎬</b><span>Banner</span><small>Trocar mídia e animação</small></a>
+<a href="#site-settings" data-section="site-settings"><b>🎨</b><span>Aparência</span><small>Logo, cores e visual</small></a>
+<a href="#full-editor" data-section="full-editor"><b>✏️</b><span>Textos do site</span><small>Editar conteúdos e botões</small></a>
+<a href="#categories" data-section="categories"><b>🗂️</b><span>Categorias</span><small>Imagens, nomes e organização</small></a>
+<a href="#products-section" data-section="products-section"><b>🛍️</b><span>Produtos</span><small>Preço, estoque e fotos</small></a>
+<a href="#commercial" data-section="commercial"><b>💳</b><span>PIX e contato</span><small>Taxa e WhatsApp</small></a>
+<a href="#tickets-section" data-section="tickets-section"><b>🎫</b><span>Tickets</span><small>Atender clientes</small></a>
+<a href="#orders-section" data-section="orders-section"><b>🧾</b><span>Compras</span><small>Consultar pedidos</small></a>
+<a href="#adminManagement" data-section="adminManagement"><b>👥</b><span>Usuários</span><small>Contas e permissões</small></a>
+<a href="#logs-section" data-section="logs-section"><b>📋</b><span>Logs</span><small>Histórico do painel</small></a>
+</div>
+<section class="panel" id="adminManagement" style="display:none"><h2>👑 Administradores</h2><p class="muted">O dono pode escolher qualquer usuário cadastrado para receber acesso de administrador. O dono continua sendo a conta principal do painel.</p><div class="admin-access-note">Escolha um usuário abaixo e clique em <b>Dar acesso ao painel</b>. O usuário continuará usando a própria conta.</div><div id="adminUsers"></div></section>
+<section class="panel" id="site-banner"><h2>🎬 BANNER ANIMADO DO TOPO — CONTROLE TOTAL</h2><p class="muted">Escolha MP4/WebM, GIF ou imagem. Pode usar URL pública ou arquivo pequeno. Vídeos grandes devem usar uma URL pública/CDN.</p><form id="bannerForm"><div class="grid"><div class="field"><label>Ativar</label><select id="bEnabled"><option value="true">Sim</option><option value="false">Não</option></select></div><div class="field"><label>Tipo</label><select id="bType"><option value="video">MP4 / WebM</option><option value="gif">GIF</option><option value="image">Imagem</option><option value="none">Desativado</option></select></div><div class="field" style="grid-column:1/-1"><label>URL da mídia</label><input id="bUrl" placeholder="https://.../banner.mp4"></div><div class="field" style="grid-column:1/-1"><label>Ou arquivo local (até 4 MB)</label><input id="bFile" type="file" accept="video/mp4,video/webm,image/gif,image/png,image/jpeg"></div><div class="field"><label>Altura (px)</label><input id="bHeight" type="number" min="160" max="720" value="320"></div><div class="field"><label>Posição</label><select id="bPosition"><option>center</option><option>top</option><option>bottom</option><option>left</option><option>right</option></select></div><div class="field"><label>Ajuste</label><select id="bFit"><option value="cover">Preencher</option><option value="contain">Mostrar inteira</option><option value="fill">Esticar</option></select></div><div class="field"><label>Escurecimento</label><input id="bOverlay" type="number" min="0" max="1" step="0.05" value="0.25"></div><div class="field"><label>Autoplay</label><select id="bAutoplay"><option value="true">Sim</option><option value="false">Não</option></select></div><div class="field"><label>Loop</label><select id="bLoop"><option value="true">Sim</option><option value="false">Não</option></select></div><div class="field"><label>Sem som</label><select id="bMuted"><option value="true">Sim</option><option value="false">Não</option></select></div><div class="field" style="grid-column:1/-1"><label>Link ao clicar (opcional)</label><input id="bLink" placeholder="https://..."></div></div><div class="actions" style="margin-top:12px"><button type="submit">💾 Salvar banner</button></div></form></section>
+<section class="panel" id="site-settings"><h2>🎨 Aparência e conteúdo do site</h2><div class="admin-group"><h3>🖼️ Banner grande do topo — 1920×1080 (16:9)</h3><p class="muted">O banner pode ser imagem, GIF ou vídeo e pode ser alterado pelo painel do dono.</p><p class="muted">Altere textos, logo, cores, tutorial, Discord, suporte e todos os cards de categorias sem editar código.</p><form id="settingsForm"><div class="grid">
+<div class="field"><label>Nome da loja</label><input id="sSiteName"></div><div class="field"><label>Logo (URL)</label><input id="sLogoUrl" placeholder="https://.../logo.png ou images/logo.png"><input id="sLogoFile" type="file" accept="image/*"></div><div class="field"><label>Fundo geral do site (URL)</label><input id="sBackgroundImageUrl" placeholder="images/site-background-lilies.png"><input id="sBackgroundImageFile" type="file" accept="image/*"><small class="muted">Pode trocar pelo painel do dono sem editar o código.</small></div><div class="field"><label>Transparência do fundo</label><input id="sBackgroundOpacity" type="range" min="0" max="1" step="0.05" value="0.6" oninput="document.getElementById('sBackgroundOpacityValue').textContent=Math.round(this.value*100)+'%'"><b id="sBackgroundOpacityValue">60%</b></div>
+<div class="field"><label>Imagem de fundo do topo (URL)</label><input id="sHeroBackgroundUrl" placeholder="https://.../banner.jpg"><input id="sHeroBackgroundFile" type="file" accept="image/*"></div><div class="field"><label>Logo/animação do topo (URL)</label><input id="sHeroMediaUrl" placeholder="GIF, PNG, WebM ou MP4"><input id="sHeroMediaFile" type="file" accept="image/*,.gif,video/mp4,video/webm"></div><div class="field"><label>Tipo da mídia do topo</label><select id="sHeroMediaType"><option value="none">Usar somente fundo</option><option value="image">Imagem/Logo</option><option value="gif">GIF animado</option><option value="video">Vídeo MP4/WebM</option></select></div><div class="field"><label>Título principal</label><input id="sHeroTitle"></div><div class="field"><label>Descrição principal</label><textarea id="sHeroDescription"></textarea></div>
+<div class="field"><label>Texto do botão</label><input id="sHeroButton"></div><div class="field"><label>Selo 1</label><input id="sHeroBadge1"></div><div class="field"><label>Selo 2</label><input id="sHeroBadge2"></div>
+</div><div class="admin-group"><h3>🎬 Tutorial e atendimento</h3><p class="muted">Configure tutorial, Discord, suporte e WhatsApp.</p><div class="grid"><div class="field"><label>Título do tutorial</label><input id="sTutorialTitle"></div><div class="field"><label>Subtítulo do tutorial</label><input id="sTutorialSubtitle"></div><div class="field"><label>Vídeo tutorial (YouTube)</label><input id="sTutorialVideoUrl" placeholder="https://youtube.com/watch?v=..."></div>
+<div class="field"><label>Discord</label><input id="sDiscordUrl" placeholder="https://discord.gg/..." ></div><div class="field"><label>Link do suporte</label><input id="sSupportUrl" placeholder="https://..." ></div><div class="field"><label>WhatsApp</label><input id="sWhatsappUrl" placeholder="https://wa.me/..." ></div>
+</div></div><div class="admin-group"><h3>🎨 Cores</h3><div class="grid"><div class="field"><label>Cor roxa principal</label><input id="sPrimaryColor" type="color"></div><div class="field"><label>Roxo escuro</label><input id="sPrimaryDark" type="color"></div><div class="field"><label>Fundo</label><input id="sBackgroundColor" type="color"></div><div class="field"><label>Cor dos cards</label><input id="sCardColor" type="color"></div>
+</div></div><div class="admin-group"><h3>📝 Rodapé</h3><div class="field" style="grid-column:1/-1"><label>Rodapé</label><input id="sFooterText"></div></div></div><div class="actions" style="margin-top:12px"><button type="submit">💾 Salvar aparência</button></div></form></section>
+<section class="panel" id="commercial"><h2>💳 Configurações comerciais</h2><p class="muted">Controle valores e contatos usados pelo checkout. Não coloque aqui API keys ou tokens secretos.</p><div class="grid"><div class="field"><label>Taxa adicional do PIX (R$)</label><input id="commercialPixFee" type="number" min="0" step="0.01"></div><div class="field"><label>WhatsApp de atendimento</label><input id="commercialWhatsapp" placeholder="5591999999999"></div></div><div class="actions" style="margin-top:12px"><button type="button" id="saveCommercial">💾 Salvar configurações</button></div></section>
+<section class="panel" id="full-editor"><h2>🧩 Editor completo do site</h2><p class="muted">Aqui você controla os textos, títulos, botões, avaliações, catálogos, rodapé e visibilidade das áreas da loja. Tudo é salvo no PostgreSQL e aplicado sem editar código.</p><div id="fullEditor" class="full-editor-groups"></div><p class="muted" style="margin:12px 0 0">Use “Gerenciar categorias” para criar e editar categorias, imagens, cores, descrições e botões. Use “Gerenciar produtos” para criar, editar e colocar itens em qualquer categoria.</p><div class="actions" style="margin-top:12px"><button type="button" id="saveFullEditor">💾 Salvar todas as alterações</button></div></section><section class="panel" id="categories"><h2>🗂️ Gerenciar categorias</h2><p class="muted">Crie, edite, oculte e organize categorias. Cada uma pode ter nome, descrição, botão, cor e imagem. Depois escolha a categoria ao cadastrar um produto.</p><div class="admin-group"><form id="categoryForm"><div class="grid"><div class="field"><label>ID da categoria</label><input id="catId" placeholder="ex: pets ou frutas-raras" required></div><div class="field"><label>Nome</label><input id="catTitle" placeholder="Nome da categoria" required></div><div class="field"><label>Descrição</label><textarea id="catText" placeholder="Descrição mostrada no catálogo"></textarea></div><div class="field"><label>Texto do botão</label><input id="catButton" value="Ver produtos"></div><div class="field"><label>Cor</label><input id="catColor" type="color" value="#e21b23"></div><div class="field"><label>Imagem (URL)</label><input id="catImage" placeholder="https://.../imagem.png"></div><div class="field"><label>Imagem do celular/PC</label><input id="catImageFile" type="file" accept="image/*"></div><div class="field"><label>Visível na loja</label><select id="catActive"><option value="true">Sim</option><option value="false">Não</option></select></div></div><div class="category-preview-wrap" style="margin-top:12px"><img id="catPreview" class="category-preview" alt="Prévia" style="display:none"></div><div class="actions" style="margin-top:12px"><button type="submit">💾 Salvar categoria</button><button type="button" class="secondary" onclick="clearCategoryForm()">Limpar</button></div></form></div><div id="categoryList"></div></section><section class="panel" id="products-section"><h2>🛍️ Gerenciar produtos</h2><p class="muted">Edite qualquer produto de qualquer categoria — por exemplo <b>DRAGON PERMANENTE</b>, todos os itens de <b>SKINS</b>, Gamepass, Gacha Box e Frutas Físicas. Você pode trocar nome, descrição, preço, estoque, categoria e foto, criar produtos novos e decidir se cada produto fica visível para todos na loja.</p><div class="product-manager-head"><div><h3 style="margin:0 0 4px">📦 Catálogo completo</h3><div class="muted">Os produtos ficam separados por categoria para você encontrar e editar cada um rapidamente.</div></div><button type="button" onclick="newProduct()">➕ Adicionar novo produto</button></div><div class="product-filters"><div class="field"><label>🔎 Procurar produto</label><input id="productSearch" placeholder="Ex.: Dragon, Kitsune, Ruby..."></div><div class="field"><label>🗂️ Categoria</label><select id="productFilterCategory"><option value="all">Todas as categorias</option></select></div><div class="field"><label>👁️ Visibilidade</label><select id="productFilterStatus"><option value="all">Todos</option><option value="active">Ativos na loja</option><option value="inactive">Ocultos</option></select></div></div><form id="productForm"><div class="product-form-title"><div><b id="productFormMode">➕ Novo produto</b><span class="muted" id="productFormHint">Preencha os campos e salve para criar o produto.</span></div><button type="button" class="secondary" onclick="newProduct()">Limpar / novo</button></div><div class="grid"><div class="field"><label>ID do produto</label><input id="pid" required placeholder="ex: dragon-novo"></div><div class="field"><label>Nome</label><input id="pname" required placeholder="Ex.: DRAGON PERMANENTE"></div><div class="field" style="grid-column:1/-1"><label>Descrição</label><textarea id="pdescription" placeholder="Descrição mostrada no produto"></textarea></div><div class="field"><label>Preço</label><input id="pprice" type="number" step="0.01" min="0" required></div><div class="field"><label>Preço antigo</label><input id="pold" type="number" step="0.01" min="0" required></div><div class="field"><label>Estoque</label><input id="pstock" type="number" min="0" step="1" required placeholder="0"></div><div class="field"><label>Categoria</label><select id="pcat"></select></div><div class="field" style="grid-column:1/-1"><label>Foto do produto</label><input id="pimage" placeholder="https://.../imagem.png"><input id="pimageFile" type="file" accept="image/*"><div class="product-image-preview-wrap"><img id="pimagePreview" alt="Prévia da foto do produto"></div></div><div class="field"><label>Mostrar para todos na loja</label><select id="pactive"><option value="true">🟢 Sim — produto ativo</option><option value="false">⚪ Não — produto oculto</option></select></div></div><div class="actions" style="margin-top:12px"><button type="submit">💾 Salvar produto</button><button type="button" class="secondary" onclick="newProduct()">➕ Adicionar novo</button></div></form><div id="products"></div><section class="stock-manager" id="stockManager"><div class="stock-manager-head"><div><h3>📦 Estoque rápido</h3><p class="muted">Adicione ou ajuste o estoque de qualquer produto. O número mostrado na loja será atualizado para 1, 2, 3, 4, 5, 6, 7… conforme a quantidade disponível.</p></div><div class="stock-manager-tools"><select id="stockQuickCategory"><option value="all">Todos os estoques</option></select><input id="stockQuickSearch" placeholder="🔎 Procurar produto"></div></div><div id="stockQuickList"></div></section></section>
+<section class="panel" id="tickets-section"><h2>🎫 Tickets</h2><p class="muted">Cada ticket aberto aparece em uma lista compacta com nome e Gmail. Clique em “Entrar” para abrir apenas aquele atendimento e responder.</p><div id="tickets"></div></section>
+<section class="panel" id="orders-section"><div class="orders-head-polish"><div><h2 style="margin:0">🧾 Compras</h2><p class="muted" style="margin:5px 0 0">Aqui aparecem os pedidos gerados pelo checkout, inclusive os que ainda estão aguardando pagamento. Você pode selecionar o cliente e <b>aprovar o pagamento manualmente</b>, sem o cliente ter concluído o PIX.</p></div><div class="orders-admin-badge">💳 Aprovação manual</div></div><div class="orders-help-grid"><div><b>💳 Aprovar pagamento</b><span>Marca o pedido como aprovado sem exigir pagamento automático.</span></div><div><b>📦 Aprovar e entregar</b><span>Aprova e já registra a entrega do produto.</span></div></div><div style="overflow:auto"><table class="table"><thead><tr><th>Data</th><th>Cliente</th><th>Produtos</th><th>Total</th><th>Status</th><th>Ações</th></tr></thead><tbody id="ordersBody"></tbody></table></div></section><section class="panel" id="logs-section"><h2>Logs</h2><div id="logs"></div></section></main></div><script>
+const API='/api';
+let authToken=localStorage.getItem('kaneki_token')||'';
+let data={users:[],orders:[],tickets:[],products:[],logs:[],settings:{}};
+function esc(x){return String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function money(x){return 'R$ '+Number(x||0).toFixed(2).replace('.',',');}
+async function api(path,opts={}){
+  const headers={'Content-Type':'application/json',...(opts.headers||{})};
+  if(authToken) headers.Authorization='Bearer '+authToken;
+  const r=await fetch(API+'?route='+encodeURIComponent(String(path||'').replace(/^\//,'')),{...opts,headers,credentials:'same-origin'});
+  const out=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(out.error||'Não foi possível concluir.');
+  return out;
+}
+
+const fullFields=[
+['content_trust1','Faixa superior — selo 1','LOJA OFICIAL'],['content_trust2','Faixa superior — selo 2','ENTREGA AUTOMÁTICA'],['content_topcat1','Categoria rápida 1','frutas permanentes'],['content_topcat2','Categoria rápida 2','frutas skins'],['content_topcat3','Categoria rápida 3','frutas físicas'],['content_topcat4','Categoria rápida 4','game pass'],['content_topcat5','Categoria rápida 5','gacha box'],['content_checkoutTitle','Checkout — título','Resumo do pedido'],['content_checkoutItems','Checkout — itens','Itens no carrinho'],['content_checkoutPix','Checkout — Pix','Pix'],['content_checkoutPixFast','Checkout — selo rápido','⚡ Mais rápido'],['content_checkoutPixSub','Checkout — subtítulo Pix','Aprovação imediata'],['content_checkoutSafe','Checkout — segurança','Ambiente protegido'],['content_checkoutSafePix','Checkout — segurança Pix','PIX com aprovação rápida'],['content_checkoutFooter','Checkout — aviso final','Pagamento via Pix. Após a confirmação, seu ticket de atendimento será liberado automaticamente.'],['content_paymentTitle','Pagamento — título','💳 Escolha o pagamento'],['content_paymentSubtitle','Pagamento — subtítulo','Seu Nick foi confirmado. Agora escolha como deseja pagar.'],['content_pixGenerated','PIX — título','PIX gerado na hora'],['content_pixFeeLabel','PIX — taxa','Taxa deste PIX:'],['content_pixTotalLabel','PIX — total','Valor a pagar:'],['content_pixWaiting','PIX — aguardando','⌛ Aguardando confirmação automática do pagamento...'],['content_pixTimer','PIX — contador','⏱️ Este PIX expira em'],['content_pixConfirmed','PIX — confirmado','Pagamento confirmado!'],['content_termsTitle','Termos — título','Termos e Condições'],['pixFee','Taxa PIX','1.49'],['whatsappNumber','WhatsApp — número','5591985748541'],['content_nav1','Menu — Início','Início'],['content_nav2','Menu — Frutas Permanente','Frutas Permanente'],['content_nav3','Menu — Skins Frutas','Skins Frutas'],['content_nav5','Menu — FAQ','FAQ'],['content_nav6','Menu — Contato','Contato'],
+['sideMenu1Label','Menu lateral 1 — nome','Início'],['sideMenu1Url','Menu lateral 1 — link','#inicio'],['sideMenu1Desc','Menu lateral 1 — descrição','Voltar para a página inicial'],['sideMenu1Visible','Menu lateral 1 — visível (true/false)','true'],['sideMenu2Label','Menu lateral 2 — nome','Explorar'],['sideMenu2Url','Menu lateral 2 — link','#catalogos'],['sideMenu2Desc','Menu lateral 2 — descrição','Ver categorias e produtos'],['sideMenu2Visible','Menu lateral 2 — visível (true/false)','true'],['sideMenu3Label','Menu lateral 3 — nome','Contato'],['sideMenu3Url','Menu lateral 3 — link','#contato'],['sideMenu3Desc','Menu lateral 3 — descrição','Falar com a loja'],['sideMenu3Visible','Menu lateral 3 — visível (true/false)','true'],['sideMenu4Label','Menu lateral 4 — nome','FAQ'],['sideMenu4Url','Menu lateral 4 — link','#faq'],['sideMenu4Desc','Menu lateral 4 — descrição','Dúvidas frequentes'],['sideMenu4Visible','Menu lateral 4 — visível (true/false)','true'],['sideMenu5Label','Menu lateral 5 — nome','Meus pedidos'],['sideMenu5Url','Menu lateral 5 — link','#contato'],['sideMenu5Desc','Menu lateral 5 — descrição','Acompanhar atendimento e pedidos'],['sideMenu5Visible','Menu lateral 5 — visível (true/false)','true'],['sideMenuLogoUrl','Menu lateral — logo (URL)','images/kaneki-logo.png'],['musicUrl','Música do site — URL',''],['musicVolume','Música do site — volume (0–100)','25'],['musicMuted','Música do site — silenciado (true/false)','false'],['heroBannerWidth','Banner — largura (px ou 100%)','100%'],['heroBannerHeight','Banner — altura (px, até 1980)','320'],['heroBannerVolume','Banner — volume do vídeo (0–100)','100'],
+['content_reviewsKicker','Clientes — selo','CLIENTES KANEKI'],['content_reviewsTitle','Clientes — título','O que nossos clientes dizem'],
+['content_review1Name','Avaliação 1 — nome','Cliente verificado'],['content_review1Text','Avaliação 1 — texto','“Muito bom, vale a pena. Recomendo!”'],['content_review1Stars','Avaliação 1 — estrelas','★★★★★'],
+['content_review2Name','Avaliação 2 — nome','Cliente verificado'],['content_review2Text','Avaliação 2 — texto','“Entrega certinho e atendimento rápido.”'],['content_review2Stars','Avaliação 2 — estrelas','★★★★★'],
+['content_review3Name','Avaliação 3 — nome','Cliente verificado'],['content_review3Text','Avaliação 3 — texto','“Compra tranquila e produto recebido.”'],['content_review3Stars','Avaliação 3 — estrelas','★★★★★'],
+['content_deliveryKicker','Entregas — selo','ENTREGAS KANEKI'],['content_deliveryTitle','Entregas — título','Confira as entregas'],['content_deliveryText','Entregas — descrição','Veja informações e suporte relacionados aos seus pedidos.'],['content_deliveryButton','Entregas — botão','VER ENTREGAS'],
+['accountKicker','Conta — título pequeno','CONTA KANEKI'],['accountSafe','Conta — selo de segurança','🔒 Conta conectada com segurança'],['accountLogin','Conta — texto para visitante','Entrar'],['accountEditIcon','Conta — editar perfil — ícone','👤'],['accountEditTitle','Conta — editar perfil — título','Editar perfil'],['accountEditText','Conta — editar perfil — descrição','Nome e foto'],['accountChatIcon','Conta — chat — ícone','🌐'],['accountChatTitle','Conta — chat — título','Chat geral'],['accountChatText','Conta — chat — descrição','Converse com a comunidade'],['accountOrdersIcon','Conta — pedidos — ícone','📦'],['accountOrdersTitle','Conta — pedidos — título','Meus pedidos'],['accountOrdersText','Conta — pedidos — descrição','Acompanhe tickets e entregas'],['accountDiscordIcon','Conta — Discord — ícone','💬'],['accountDiscordTitle','Conta — Discord — título','Discord'],['accountDiscordText','Conta — Discord — descrição','discord.gg/YkPRj5FCq'],['accountWhatsappIcon','Conta — WhatsApp — ícone','📱'],['accountWhatsappTitle','Conta — WhatsApp — título','WhatsApp'],['accountWhatsappText','Conta — WhatsApp — descrição','Falar com a KANEKI STORE'],['accountSwitchIcon','Conta — mudar conta — ícone','🔄'],['accountSwitchTitle','Conta — mudar conta — título','Mudar de conta'],['accountSwitchText','Conta — mudar conta — descrição','Entrar com outro Google'],['accountAdminIcon','Conta — painel dono — ícone','⚙️'],['accountAdminTitle','Conta — painel dono — título','Painel do dono'],['accountAdminText','Conta — painel dono — descrição','Editar loja e produtos'],['accountLogout','Conta — botão sair','Sair da conta'],
+['content_catalogKicker','Catálogos — selo','CATÁLOGO BLOX FRUITS'],['content_catalogTitle','Catálogos — título','Produtos'],['content_cat1Title','Categoria 1 — nome','Frutas permanentes'],['content_cat1Text','Catálogo 1 — descrição','Aqui você vai encontrar as melhores frutas permanentes'],['content_cat1Button','Catálogo 1 — botão','Ver produtos'],['content_cat2Title','Categoria 2 — nome','Skins'],['content_cat2Text','Catálogo 2 — descrição','Aqui você vai encontrar as melhores skins de frutas'],['content_cat2Button','Catálogo 2 — botão','Ver produtos'],['content_cat3Title','Categoria 3 — nome','Frutas físicas'],['content_cat3Text','Catálogo 3 — descrição','Aqui você vai encontrar as melhores frutas físicas'],['content_cat3Button','Catálogo 3 — botão','Ver produtos'],['content_cat4Title','Categoria 4 — nome','Game Pass'],['content_cat4Text','Catálogo 4 — descrição','Aqui você vai encontrar os melhores Game Pass'],['content_cat4Button','Catálogo 4 — botão','Ver produtos'],['content_cat5Title','Categoria 5 — nome','Gacha Box'],['content_cat5Text','Catálogo 5 — descrição','Aqui você vai encontrar os melhores itens da Gacha Box'],['content_cat5Button','Catálogo 5 — botão','Ver produtos'],['content_cat6Title','Categoria 6 — nome',''],['content_cat6Text','Catálogo 6 — descrição','Aqui você vai encontrar os melhores itens da Gacha Box'],
+['content_produtosTitle','Seção produtos — frutas','FRUTAS PERMANENTE'],['content_skinsTitle','Seção produtos — skins','SKINS FRUTAS'],['content_fisicasTitle','Seção produtos — físicas','FRUTAS FISICAS'],['content_gamepassTitle','Seção produtos — game pass','GAME PASS'],['content_gachaboxTitle','Seção produtos — gacha','GACHA BOX'],
+['content_faqTitle','FAQ — título','FAQ'],['content_faqText','FAQ — descrição','PIX e cartão disponíveis. Após a confirmação do pagamento, siga as instruções do pedido.'],['content_contactTitle','Contato — título','Entre em contato'],['content_contactText','Contato — descrição','Atendimento via WhatsApp.'],
+['button_buy','Botão de compra','Comprar agora'],['button_pay','Botão pagar agora','Pagar agora'],['button_continue','Botão continuar','CONTINUAR'],['button_donepix','Botão já fiz o PIX','Já fiz o PIX / Enviar pedido'],['button_copy','Botão copiar PIX','Copiar'],['button_cancel','Botão cancelar PIX','Cancelar PIX'],
+['visible_tutorial','Mostrar vídeo tutorial (sim/não)','true'],['visible_reviews','Mostrar avaliações (sim/não)','true'],['visible_delivery','Mostrar entregas (sim/não)','true'],['visible_catalogs','Mostrar catálogos (sim/não)','true'],['visible_faq','Mostrar FAQ (sim/não)','true'],['visible_contact','Mostrar contato (sim/não)','true'],['visible_floating','Mostrar botões flutuantes (sim/não)','true']
+];
+const catalogVisualFields=[
+['catalog1Image','Frutas permanentes — foto (URL)',''],['catalog1Color','Frutas permanentes — cor','#e21b23'],
+['catalog2Image','Skins — foto (URL)',''],['catalog2Color','Skins — cor','#e21b23'],
+['catalog3Image','Frutas físicas — foto (URL)',''],['catalog3Color','Frutas físicas — cor','#e21b23'],
+['catalog4Image','Game Pass — foto (URL)',''],['catalog4Color','Game Pass — cor','#e21b23'],
+['catalog5Image','Gacha Box — foto (URL)',''],['catalog5Color','Gacha Box — cor','#e21b23']
+];
+function buildFullEditor(settings={}){const el=document.getElementById('fullEditor');if(!el)return;const makeField=([k,label,def])=>`<div class="field" style="${k==='customCss'?'grid-column:1/-1':''}"><label>${esc(label)}</label>${k==='customCss'?`<textarea data-full-key="${esc(k)}" rows="14" placeholder="/* CSS personalizado da loja */">${esc(settings[k]??def)}</textarea>`:`<input data-full-key="${esc(k)}" value="${esc(settings[k]??def)}">`}</div>`;const groups=[['✏️ Textos da loja','Altere títulos, descrições, menus e botões.',fullFields.filter(x=>x[0].startsWith('content_')&&!x[0].startsWith('content_cat')&&!x[0].startsWith('content_produtos')&&!x[0].startsWith('content_skins')&&!x[0].startsWith('content_fisicas')&&!x[0].startsWith('content_gamepass')&&!x[0].startsWith('content_gachabox'))],['👤 Interface da conta','Edite os textos da área da conta.',fullFields.filter(x=>x[0].startsWith('account'))],['🏷️ Títulos dos produtos','Nomes das seções dos catálogos.',fullFields.filter(x=>x[0].startsWith('content_produtos')||x[0].startsWith('content_skins')||x[0].startsWith('content_fisicas')||x[0].startsWith('content_gamepass')||x[0].startsWith('content_gachabox'))],['⚙️ Botões e visibilidade','Controle textos de botões e visibilidade das áreas.',fullFields.filter(x=>x[0].startsWith('button_')||x[0].startsWith('visible_'))],['☰ Menu lateral','Configure os itens e a logo que aparecem ao clicar nos três pontinhos. Deixe o nome vazio ou visível como false para ocultar um item.',fullFields.filter(x=>x[0].startsWith('sideMenu'))],['🎵 Mídia e dimensões','Controle a música do site, volume, largura e altura do banner.',fullFields.filter(x=>['musicUrl','musicVolume','musicMuted','heroBannerWidth','heroBannerHeight','heroBannerVolume'].includes(x[0]))],['🎨 CSS personalizado','Altere visualmente qualquer detalhe da loja sem editar o código.',[['customCss','CSS personalizado','']]]];el.innerHTML=groups.map(([h,d,fields])=>`<div class="admin-group"><h3>${h}</h3><p class="muted">${d}</p><div class="grid">${fields.map(makeField).join('')}</div></div>`).join('');}async function load(){try{const me=await api('me');if(!me.user||!['owner','admin'].includes(String(me.user.role||'').toLowerCase()))throw Error('Acesso restrito. Entre com uma conta autorizada pelo dono.');const [d,t]=await Promise.all([api('admin/summary'),api('admin/tickets')]);
+      let users=Array.isArray(d?.users)?d.users:[];
+      if(!users.length){
+        const userRoutes=['admin/users','admin/customers','users'];
+        for(const route of userRoutes){try{const u=await api(route);const list=u?.users||u?.customers||u?.data||[];if(Array.isArray(list)&&list.length){users=list;break}}catch(_){} }
+      }
+      let mergedOrders=Array.isArray(d?.orders)?[...d.orders]:[];
+      /* Alguns backends entregam pedidos aguardando PIX por uma rota separada. Tentamos
+         a rota de compras também para que o pedido apareça no painel assim que o QR é criado. */
+      const orderRoutes=['admin/orders','admin/pending-orders','admin/checkout-sessions'];
+      for(const route of orderRoutes){try{const od=await api(route);const list=od?.orders||od?.data||od?.pendingOrders||od?.sessions||[];if(Array.isArray(list)&&list.length){const seen=new Set(mergedOrders.map(x=>String(x.id||x.order_id||x.orderKey||x.order_key)));for(const item of list){const key=String(item.id||item.order_id||item.orderKey||item.order_key);if(!seen.has(key)){mergedOrders.push(item);seen.add(key)}}}}catch(_){} }
+      data={...d,orders:mergedOrders,users,tickets:t.tickets||[]};fillSettings(d.settings||{});fillBanner(d.settings||{});document.getElementById('commercialPixFee').value=d.settings?.pixFee||'1.49';document.getElementById('commercialWhatsapp').value=d.settings?.whatsappNumber||'5591985748541';buildFullEditor(d.settings||{});renderCategories();refreshCategorySelect();document.getElementById('msg').style.display='none';document.getElementById('app').style.display='block';document.getElementById('users').textContent=users.length;document.getElementById('orders').textContent=mergedOrders.length;document.getElementById('ticketsCount').textContent=(d.tickets||[]).length;renderProducts();renderStockQuick();renderTickets();renderOrders();renderAdminUsers(users);document.getElementById('adminManagement').style.display=String(me.user.role||'').toLowerCase()==='owner'?'block':'none';
+      const requested=String(location.hash||'').replace(/^#/,'').trim()||'site-banner';
+      if(!window.__adminInitialSectionSet){window.__adminInitialSectionSet=true;setOwnerSection(requested,false);}else{setOwnerSection(requested,false);}
+      document.getElementById('logs').innerHTML=d.logs.map(l=>`<div class="msg"><b>${esc(l.action)}</b> — ${new Date(l.at).toLocaleString('pt-BR')} — ${esc(l.email||'visitante')}</div>`).join('')||'<span class="muted">Sem logs.</span>'}catch(e){document.getElementById('msg').textContent=e.message}}
+const OWNER_SECTIONS=['site-banner','site-settings','full-editor','categories','products-section','commercial','tickets-section','orders-section','adminManagement','logs-section'];
+function setOwnerSection(id,updateHash=true){
+  const targetId=OWNER_SECTIONS.includes(id)?id:'site-banner';
+  document.querySelectorAll('#app > .panel').forEach(el=>{
+    if(!OWNER_SECTIONS.includes(el.id)) return;
+    const active=el.id===targetId;
+    el.classList.toggle('admin-section-visible',active);
+    el.classList.toggle('admin-section-hidden',!active);
+  });
+  document.querySelectorAll('#ownerNavigation a[data-section]').forEach(a=>{
+    a.classList.toggle('active',a.dataset.section===targetId);
+  });
+  if(updateHash && location.hash !== '#'+targetId) history.pushState(null,'','#'+targetId);
+  // Só navega/rola quando o usuário escolhe uma categoria.
+  // Atualizações automáticas nunca devem puxar a página para cima durante a edição.
+  if(updateHash){
+    const target=document.getElementById(targetId);
+    if(target) setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'start'}),0);
+  }
+}
+function scrollToRequestedSection(){
+  const raw=String(location.hash||'').replace(/^#/,'').trim();
+  setOwnerSection(raw||'site-banner',false);
+}
+document.querySelectorAll('#ownerNavigation a[data-section]').forEach(a=>{
+  a.addEventListener('click',e=>{e.preventDefault();setOwnerSection(a.dataset.section,true);});
+});
+window.addEventListener('hashchange',scrollToRequestedSection);
+window.addEventListener('popstate',scrollToRequestedSection);
+function fillSettings(s){const m={sSiteName:'siteName',sLogoUrl:'logoUrl',sBackgroundImageUrl:'backgroundImageUrl',sBackgroundOpacity:'backgroundOpacity',sHeroBackgroundUrl:'heroBackgroundUrl',sHeroMediaUrl:'heroMediaUrl',sHeroMediaType:'heroMediaType',sHeroTitle:'heroTitle',sHeroDescription:'heroDescription',sHeroButton:'heroButton',sHeroBadge1:'heroBadge1',sHeroBadge2:'heroBadge2',sTutorialTitle:'tutorialTitle',sTutorialSubtitle:'tutorialSubtitle',sTutorialVideoUrl:'tutorialVideoUrl',sDiscordUrl:'discordUrl',sSupportUrl:'supportUrl',sWhatsappUrl:'whatsappUrl',sPrimaryColor:'primaryColor',sPrimaryDark:'primaryDark',sBackgroundColor:'backgroundColor',sCardColor:'cardColor',sFooterText:'footerText'};Object.entries(m).forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.value=(k==='tutorialVideoUrl'?(s[k]||'https://youtu.be/7aMOurgDB-o?is=XG9LU3hscFktyKOs'):(s[k]||''))});const d=document.getElementById('sDiscordUrl');if(d&&!d.value)d.value='https://discord.gg/YkPRj5FCq'}
+async function saveBanner(){const body={heroBannerEnabled:bEnabled.value,heroBannerType:bType.value,heroBannerUrl:bUrl.value,heroBannerHeight:bHeight.value,heroBannerPosition:bPosition.value,heroBannerObjectFit:bFit.value,heroBannerAutoplay:bAutoplay.value,heroBannerLoop:bLoop.value,heroBannerMuted:bMuted.value,heroBannerOverlay:bOverlay.value,heroBannerLink:bLink.value};await api('admin/settings',{method:'POST',body:JSON.stringify(body)});alert('Banner salvo!');load()}
+function fillBanner(s){bEnabled.value=s.heroBannerEnabled||'false';bType.value=s.heroBannerType||'none';bUrl.value=s.heroBannerUrl||'';bHeight.value=s.heroBannerHeight||'320';bPosition.value=s.heroBannerPosition||'center';bFit.value=s.heroBannerObjectFit||'cover';bAutoplay.value=s.heroBannerAutoplay||'true';bLoop.value=s.heroBannerLoop||'true';bMuted.value=s.heroBannerMuted||'true';bOverlay.value=s.heroBannerOverlay??'0.25';bLink.value=s.heroBannerLink||''}
+bannerForm.onsubmit=async e=>{e.preventDefault();try{const f=bFile.files[0];if(f){if(f.size>4000000)throw Error('Arquivo local acima de 4 MB. Use uma URL pública para MP4 grande.');bUrl.value=await fileToData(f,'banner');bType.value=f.type==='image/gif'?'gif':(f.type.startsWith('video/')?'video':'image');}await saveBanner()}catch(e){alert(e.message)}};
+document.getElementById('saveCommercial').onclick=async()=>{try{await api('admin/settings',{method:'POST',body:JSON.stringify({pixFee:document.getElementById('commercialPixFee').value,whatsappNumber:document.getElementById('commercialWhatsapp').value})});alert('Configurações comerciais salvas!');load()}catch(e){alert(e.message)}};
+settingsForm.onsubmit=async e=>{e.preventDefault();const ids=['sSiteName','sLogoUrl','sBackgroundImageUrl','sBackgroundOpacity','sHeroBackgroundUrl','sHeroMediaUrl','sHeroMediaType','sHeroTitle','sHeroDescription','sHeroButton','sHeroBadge1','sHeroBadge2','sTutorialTitle','sTutorialSubtitle','sTutorialVideoUrl','sDiscordUrl','sSupportUrl','sWhatsappUrl','sPrimaryColor','sPrimaryDark','sBackgroundColor','sCardColor','sFooterText'];const keys=['siteName','logoUrl','backgroundImageUrl','backgroundOpacity','heroBackgroundUrl','heroMediaUrl','heroMediaType','heroTitle','heroDescription','heroButton','heroBadge1','heroBadge2','tutorialTitle','tutorialSubtitle','tutorialVideoUrl','discordUrl','supportUrl','whatsappUrl','primaryColor','primaryDark','backgroundColor','cardColor','footerText'];const body={};keys.forEach((k,i)=>body[k]=document.getElementById(ids[i]).value);try{await api('admin/settings',{method:'POST',body:JSON.stringify(body)});alert('Aparência salva!');load()}catch(e){alert(e.message)}};
+function renderAdminUsers(users){
+  const box=document.getElementById('adminUsers');if(!box)return;
+  const all=(Array.isArray(users)?users:[]).filter(u=>String(u.email||'').toLowerCase()!=='administradorsupreme@gmail.com');
+  const admins=all.filter(u=>['admin','administrator'].includes(String(u.role||'').toLowerCase()));
+  const available=all.filter(u=>!['admin','administrator','owner'].includes(String(u.role||'').toLowerCase()));
+  box.innerHTML=`
+    <div class="admin-access-toolbar">
+      <div><h3 style="margin:0">👑 Acesso ao painel</h3><p class="muted" style="margin:5px 0 0">Escolha qualquer usuário cadastrado e dê acesso de administrador. O dono continua sendo o único proprietário da loja.</p></div>
+      <div class="admin-access-add"><input id="adminUserSearch" placeholder="Pesquisar por nome ou Gmail..." oninput="filterAdminUsers()"><select id="adminUserSelect"><option value="">Selecione um usuário</option>${available.map(u=>`<option value="${esc(u.id)}">${esc(u.name||'Sem nome')} — ${esc(u.email||'sem Gmail')}</option>`).join('')}</select><button type="button" onclick="grantSelectedAdmin()">➕ Dar acesso ao painel</button></div>
+    </div>
+    ${all.length?'':`<div class="admin-access-empty"><b>👤 Nenhum usuário foi retornado pela API.</b><span>O seletor aparecerá automaticamente assim que o backend entregar a lista de usuários. O painel também tenta as rotas de usuários, clientes e resumo.</span></div>`}
+    <div class="admin-users-grid">
+      <div class="admin-users-column"><h3>Administradores com acesso (${admins.length})</h3>${admins.map(u=>`<div class="admin-user-row"><div class="admin-user-main"><div class="admin-user-avatar">${esc(String(u.name||u.email||'?').slice(0,1).toUpperCase())}</div><div><b>${esc(u.name||'Sem nome')}</b><div class="muted">${esc(u.email||'')}</div></div></div><button type="button" class="danger" onclick="setAdmin('${esc(u.id)}','revoke')">Retirar acesso</button></div>`).join('')||'<p class="muted">Nenhum administrador adicional.</p>'}</div>
+      <div class="admin-users-column"><h3>Usuários cadastrados (${available.length})</h3><div id="adminUsersList">${available.map(u=>`<div class="admin-user-row admin-user-searchable" data-search="${esc(String(u.name||'')+' '+String(u.email||''))}"><div class="admin-user-main"><div class="admin-user-avatar">${esc(String(u.name||u.email||'?').slice(0,1).toUpperCase())}</div><div><b>${esc(u.name||'Sem nome')}</b><div class="muted">${esc(u.email||'')}</div></div></div><button type="button" onclick="setAdmin('${esc(u.id)}','grant')">Dar acesso</button></div>`).join('')||'<p class="muted">Nenhum usuário disponível.</p>'}</div></div>
+    </div>`;
+}
+function filterAdminUsers(){const q=String(document.getElementById('adminUserSearch')?.value||'').trim().toLowerCase();document.querySelectorAll('.admin-user-searchable').forEach(el=>{el.style.display=String(el.dataset.search||'').toLowerCase().includes(q)?'':'none'});}
+function grantSelectedAdmin(){const id=document.getElementById('adminUserSelect')?.value;if(!id)return alert('Selecione um usuário para dar acesso.');setAdmin(id,'grant');}
+async function setAdmin(userId,action,email){if(!userId&&!email)return;try{await api('admin/roles',{method:'POST',body:JSON.stringify({userId:userId||null,email:email||null,action})});alert(action==='grant'?'Administrador adicionado.':'Acesso de administrador retirado.');load()}catch(e){alert(e.message)}}
+function slugify(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,50)}
+function getAdminCategories(){try{const raw=String(data.settings?.categories_json||'');const c=raw?JSON.parse(raw):[];if(!Array.isArray(c)||!c.length)return [];const legacy=new Set(['images/frutas-permanentes-banner.jpg','images/skins-limited-banner.jpg','images/frutas-fisicas-banner.jpg','images/category-gamepass.png','images/category-gachabox.png','images/category-permanentes.png','images/category-skins.png','images/category-fisicas.png']);return c.map(x=>legacy.has(String(x?.image||'').trim())?{...x,image:''}:x);}catch{return []}}
+function saveAdminCategories(cats){return api('admin/settings',{method:'POST',body:JSON.stringify({categories_json:JSON.stringify(cats)})})}
+function refreshCategorySelect(){const sel=document.getElementById('pcat');if(!sel)return;const cats=getAdminCategories();const current=sel.value;sel.innerHTML=cats.map(c=>`<option value="${esc(c.id)}" ${c.active===false?'disabled':''}>${esc(c.title)}${c.active===false?' (oculta)':''}</option>`).join('');if(current&&[...sel.options].some(o=>o.value===current))sel.value=current}
+function renderCategories(){const box=document.getElementById('categoryList');if(!box)return;const cats=getAdminCategories();box.innerHTML=cats.map(c=>`<div class="category-editor"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><div><h4 style="margin:0;color:#ff6b6b">${esc(c.title)}</h4><div class="muted">ID: ${esc(c.id)} · ${c.active===false?'oculta':'visível'}</div></div>${c.image?`<img src="${esc(c.image)}" style="width:64px;height:64px;object-fit:cover;border-radius:10px;border:1px solid #4e2020" onerror="this.style.display='none'">`:''}</div><p class="muted">${esc(c.text||'')}</p><div class="actions"><button type="button" onclick='editCategory(${JSON.stringify(c).replace(/'/g,"&#39;")})'>Editar</button><button type="button" class="secondary" onclick="toggleCategory('${esc(c.id)}')">${c.active===false?'Mostrar':'Ocultar'}</button></div></div>`).join('')||'<p class="muted">Nenhuma categoria criada.</p>';refreshCategorySelect()}
+function editCategory(c){catId.value=c.id;catTitle.value=c.title||'';catText.value=c.text||'';catButton.value=c.button||'Ver produtos';catColor.value=c.color||'#e21b23';catImage.value=c.image||'';catActive.value=String(c.active!==false);catPreview.src=c.image||'';catPreview.style.display=c.image?'block':'none';document.getElementById('categoryForm').focus?.({preventScroll:true})}
+function clearCategoryForm(){document.getElementById('categoryForm').reset();catButton.value='Ver produtos';catColor.value='#e21b23';catActive.value='true';catPreview.src='';catPreview.style.display='none'}
+async function toggleCategory(id){const cats=getAdminCategories();const c=cats.find(x=>x.id===id);if(!c)return;c.active=c.active===false;try{await saveAdminCategories(cats);load()}catch(e){alert(e.message)}}
+categoryForm.onsubmit=async e=>{e.preventDefault();try{const id=slugify(catId.value)||slugify(catTitle.value);if(!id)throw Error('Informe um ID ou nome para a categoria.');const cats=getAdminCategories();const item={id,title:catTitle.value.trim(),text:catText.value.trim(),button:catButton.value.trim()||'Ver produtos',color:catColor.value||'#e21b23',image:catImage.value.trim(),active:catActive.value==='true'};if(!item.title)throw Error('Informe o nome da categoria.');const old=cats.find(c=>c.id===id);if(old)Object.assign(old,item);else cats.push(item);await saveAdminCategories(cats);alert('Categoria salva!');clearCategoryForm();load()}catch(e){alert(e.message)}};
+catImageFile.onchange=async()=>{try{const v=await fileToData(catImageFile.files[0],'categories');if(v){catImage.value=v;catPreview.src=v;catPreview.style.display='block'}}catch(e){alert(e.message)}};catImage.oninput=()=>{catPreview.src=catImage.value.trim();catPreview.style.display=catImage.value.trim()?'block':'none'};
+function productCategoryName(id){const c=getAdminCategories().find(x=>String(x.id)===String(id));if(c)return c.title||id;const map={produtos:'Permanentes',skins:'Skins',gamepass:'Game Pass',gachabox:'Gacha Box',frutasfisicas:'Frutas Físicas'};return map[id]||id||'Sem categoria'}
+function refreshProductFilter(){const sel=document.getElementById('productFilterCategory');if(!sel)return;const current=sel.value||'all';const cats=[...new Set(data.products.map(p=>String(p.catalog||'produtos')))];sel.innerHTML='<option value="all">Todas as categorias</option>'+cats.map(id=>`<option value="${esc(id)}">${esc(productCategoryName(id))}</option>`).join('');sel.value=cats.includes(current)?current:'all'}
+function renderProducts(){const box=document.getElementById('products');if(!box)return;refreshProductFilter();const q=String(document.getElementById('productSearch')?.value||'').trim().toLowerCase();const cat=document.getElementById('productFilterCategory')?.value||'all';const status=document.getElementById('productFilterStatus')?.value||'all';let rows=data.products.filter(p=>{const text=[p.product_id,p.name,p.description,p.catalog].map(x=>String(x||'').toLowerCase()).join(' ');if(q&&!text.includes(q))return false;if(cat!=='all'&&String(p.catalog||'produtos')!==cat)return false;if(status==='active'&&!p.active)return false;if(status==='inactive'&&p.active)return false;return true});rows.sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'pt-BR'));const groups={};rows.forEach(p=>(groups[p.catalog||'produtos']??=[]).push(p));const html=Object.entries(groups).map(([catalog,items])=>`<div class="product-list-category"><h3>🗂️ ${esc(productCategoryName(catalog))}</h3><span class="product-count">${items.length} produto${items.length===1?'':'s'}</span></div>${items.map(p=>{const active=p.active!==false;const img=String(p.image||'').trim();return `<div class="product-card"><img class="product-card-img" src="${esc(img)}" alt="${esc(p.name)}" onerror="this.style.opacity='.25'"><div class="product-card-info"><div class="product-card-title">${esc(p.name||'Sem nome')}</div><div class="product-card-meta"><span class="pill">ID: ${esc(p.product_id)}</span><span class="pill">${money(p.price)}</span><span class="pill">Estoque: ${esc(p.stock)}</span><span class="pill ${active?'product-status-active':'product-status-inactive'}">${active?'🟢 Ativo — aparece para todos':'⚪ Oculto — não aparece na loja'}</span></div><div class="product-card-desc">${esc(p.description||'Sem descrição')}</div></div><div class="actions product-card-actions"><button type="button" onclick='editProduct(${JSON.stringify(p).replace(/'/g,"&#39;")})'>✏️ Editar</button><button type="button" class="${active?'danger':''}" onclick="toggleProduct('${esc(p.product_id)}',${active})">${active?'👁️ Ocultar':'🚀 Ativar para todos'}</button></div></div>`}).join('')}`).join('');box.innerHTML=html||'<div class="product-empty">Nenhum produto encontrado com esses filtros.</div><div class="product-section-note">Use “➕ Adicionar novo produto” para cadastrar um item novo.</div>'}
+function editProduct(p){pid.value=p.product_id||'';pname.value=p.name||'';pdescription.value=p.description||'';pprice.value=p.price??0;pold.value=p.old??0;pstock.value=p.stock??'';refreshCategorySelect();pcat.value=p.catalog||'produtos';pimage.value=p.image||'';pactive.value=String(p.active!==false);document.getElementById('productFormMode').textContent='✏️ Editando produto';document.getElementById('productFormHint').textContent=`Alterando ${p.name||p.product_id}. Salve para aplicar na loja.`;updateProductImagePreview();document.getElementById('productForm').querySelector('input,select,textarea')?.focus({preventScroll:true})}
+function newProduct(){document.getElementById('productForm').reset();refreshCategorySelect();pactive.value='true';pold.value='0';pstock.value='0';document.getElementById('productFormMode').textContent='➕ Novo produto';document.getElementById('productFormHint').textContent='Preencha os campos e salve para criar o produto.';updateProductImagePreview();document.getElementById('pid').focus()}
+function clearForm(){newProduct()}
+function updateProductImagePreview(){const img=document.getElementById('pimagePreview');const url=String(document.getElementById('pimage').value||'').trim();if(url){img.src=url;img.style.opacity='1';}else{img.removeAttribute('src');img.style.opacity='.2'}}
+productForm.onsubmit=async e=>{e.preventDefault();try{const productId=slugify(pid.value)||slugify(pname.value);if(!productId)throw Error('Informe um ID ou nome para o produto.');if(!pname.value.trim())throw Error('Informe o nome do produto.');await api('admin/product',{method:'POST',body:JSON.stringify({productId,name:pname.value,description:pdescription.value,price:pprice.value,old:pold.value,stock:pstock.value,image:pimage.value,catalog:pcat.value,active:pactive.value==='true'})});alert(pactive.value==='true'?'Produto salvo e ativado na loja!':'Produto salvo como oculto.');newProduct();load()}catch(e){alert(e.message)}};
+async function toggleProduct(id,isActive){const p=data.products.find(x=>String(x.product_id)===String(id));if(!p)return;const action=isActive?'ocultar este produto da loja':'ativar este produto para todos na loja';if(!await window.kanekiConfirm(`Deseja ${action}?`))return;try{await api('admin/product',{method:'POST',body:JSON.stringify({productId:p.product_id,name:p.name,description:p.description||'',price:p.price,old:p.old||0,stock:p.stock,image:p.image||'',catalog:p.catalog||'produtos',active:!isActive})});load()}catch(e){alert(e.message)}}
+async function delProduct(id){const p=data.products.find(x=>String(x.product_id)===String(id));return toggleProduct(id,p?p.active!==false:true)}
+function stockNumber(v){if(v===null||v===undefined||String(v).trim()==='')return 0;if(String(v).trim()==='∞')return Infinity;const n=Number(v);return Number.isFinite(n)?Math.max(0,Math.floor(n)):0}
+function refreshStockQuickFilters(){const sel=document.getElementById('stockQuickCategory');if(!sel)return;const cur=sel.value||'all';const cats=[...new Set(data.products.map(p=>String(p.catalog||'produtos')))];sel.innerHTML='<option value="all">Todos os estoques</option>'+cats.map(c=>`<option value="${esc(c)}">${esc(productCategoryName(c))}</option>`).join('');sel.value=cats.includes(cur)?cur:'all'}
+function renderStockQuick(){const box=document.getElementById('stockQuickList');if(!box)return;refreshStockQuickFilters();const q=String(document.getElementById('stockQuickSearch')?.value||'').trim().toLowerCase();const cat=document.getElementById('stockQuickCategory')?.value||'all';let rows=data.products.filter(p=>{const text=[p.product_id,p.name,p.catalog].map(x=>String(x||'').toLowerCase()).join(' ');return (!q||text.includes(q))&&(cat==='all'||String(p.catalog||'produtos')===cat)});rows.sort((a,b)=>String(a.catalog||'').localeCompare(String(b.catalog||''))||String(a.name||'').localeCompare(String(b.name||''),'pt-BR'));const groups={};rows.forEach(p=>(groups[p.catalog||'produtos']??=[]).push(p));let html='';for(const [catalog,items] of Object.entries(groups)){html+=`<div class="stock-category-title"><b>📦 ${esc(productCategoryName(catalog))}</b><span>${items.length} produto${items.length===1?'':'s'}</span></div><div class="stock-quick-grid">`;html+=items.map(p=>{const raw=String(p.stock??'0');const unlimited=raw==='∞';const n=unlimited?0:stockNumber(raw);const zero=!unlimited&&n<=0;return `<div class="stock-quick-card ${zero?'stock-zero':''} ${unlimited?'stock-unlimited':''}"><div class="stock-quick-main"><div class="stock-quick-name">${esc(p.name||p.product_id)}</div><div class="stock-quick-meta">${esc(productCategoryName(catalog))} · ID: ${esc(p.product_id)}</div><div class="stock-quick-actions"><button type="button" onclick="changeStockQuick('${esc(p.product_id)}',1)">+1</button><button type="button" onclick="changeStockQuick('${esc(p.product_id)}',5)">+5</button><button type="button" onclick="changeStockQuick('${esc(p.product_id)}',10)">+10</button><button type="button" class="secondary" onclick="changeStockQuick('${esc(p.product_id)}',-1)">−1</button><button type="button" class="stock-save" onclick="saveStockQuick('${esc(p.product_id)}')">💾 Salvar</button></div><div class="inventory-account-box"><h4>🔐 Contas para entrega automática</h4><div class="inventory-account-form"><input id="inv-login-${esc(p.product_id)}" placeholder="Login / e-mail da conta" autocomplete="off"><input id="inv-pass-${esc(p.product_id)}" type="password" placeholder="Senha da conta" autocomplete="new-password"><button type="button" onclick="addInventoryAccount('${esc(p.product_id)}')">➕ Adicionar</button></div><div class="inventory-account-list" id="inv-list-${esc(p.product_id)}"></div><div class="inventory-account-note">As credenciais não são mostradas no catálogo. A entrega automática só funciona se o backend salvar o estoque de contas com segurança e fizer a baixa após a aprovação.</div></div></div><div class="stock-quick-value"><span>Estoque</span><input id="stock-${esc(p.product_id)}" type="number" min="0" step="1" value="${unlimited?'0':n}" ${unlimited?'disabled':''}><button type="button" class="secondary" title="Tornar ilimitado" onclick="toggleUnlimitedStock('${esc(p.product_id)}')">${unlimited?'∞':'↔'}</button></div></div>`}).join('');html+='</div>'}box.innerHTML=html||'<div class="product-empty">Nenhum produto encontrado.</div>';rows.forEach(p=>renderInventoryAccounts(p.product_id))}
+function changeStockQuick(id,delta){const p=data.products.find(x=>String(x.product_id)===String(id));if(!p||String(p.stock)==='∞')return;const el=document.getElementById('stock-'+id);if(!el)return;el.value=Math.max(0,stockNumber(el.value)+delta)}
+function toggleUnlimitedStock(id){const p=data.products.find(x=>String(x.product_id)===String(id));if(!p)return;const current=String(p.stock)==='∞';p.stock=current?'0':'∞';renderStockQuick()}
+function inventoryAccountsFor(p){return Array.isArray(p.inventoryAccounts)?p.inventoryAccounts:[]}
+function renderInventoryAccounts(id){const p=data.products.find(x=>String(x.product_id)===String(id));const box=document.getElementById('inv-list-'+id);if(!p||!box)return;const list=inventoryAccountsFor(p);box.innerHTML=list.length?list.map((a,i)=>`<div class="inventory-account-row"><span>🔐 ${esc(a.login||'Conta')} <small style="color:#777">#${i+1}</small></span><button type="button" class="secondary" onclick="removeInventoryAccount('${esc(id)}',${i})">Remover</button></div>`).join(''):'<span class="muted">Nenhuma conta cadastrada.</span>'}
+async function persistInventoryAccounts(p,list){try{const payload={productId:p.product_id,name:p.name,description:p.description||'',price:p.price,old:p.old||0,stock:p.stock,image:p.image||'',catalog:p.catalog||'produtos',active:p.active!==false,inventoryAccounts:list};await api('admin/product',{method:'POST',body:JSON.stringify(payload)});p.inventoryAccounts=list;renderInventoryAccounts(p.product_id);return true}catch(e){alert('Não foi possível salvar a conta de estoque. O backend precisa aceitar inventoryAccounts com armazenamento seguro.');return false}}
+async function addInventoryAccount(id){const p=data.products.find(x=>String(x.product_id)===String(id));if(!p)return;const login=document.getElementById('inv-login-'+id)?.value.trim();const password=document.getElementById('inv-pass-'+id)?.value||'';if(!login||!password)return alert('Informe o login e a senha da conta.');const list=[...inventoryAccountsFor(p),{login,password,addedAt:new Date().toISOString()}];if(await persistInventoryAccounts(p,list)){document.getElementById('inv-login-'+id).value='';document.getElementById('inv-pass-'+id).value='';alert('Conta adicionada ao estoque.')}}
+async function removeInventoryAccount(id,index){const p=data.products.find(x=>String(x.product_id)===String(id));if(!p)return;const list=inventoryAccountsFor(p).filter((_,i)=>i!==index);if(await window.kanekiConfirm('Remover esta conta do estoque?'))await persistInventoryAccounts(p,list)}
+async function saveStockQuick(id){const p=data.products.find(x=>String(x.product_id)===String(id));if(!p)return;const el=document.getElementById('stock-'+id);const stock=String(p.stock)==='∞'?'∞':String(Math.max(0,Math.floor(Number(el?.value||0))));try{await api('admin/product',{method:'POST',body:JSON.stringify({productId:p.product_id,name:p.name,description:p.description||'',price:p.price,old:p.old||0,stock:stock,image:p.image||'',catalog:p.catalog||'produtos',active:p.active!==false,inventoryAccounts:inventoryAccountsFor(p)})});p.stock=stock;renderProducts();renderStockQuick();}catch(e){alert(e.message)}}
+document.getElementById('productSearch').addEventListener('input',renderProducts);document.getElementById('productFilterCategory').addEventListener('change',renderProducts);document.getElementById('productFilterStatus').addEventListener('change',renderProducts);document.getElementById('stockQuickCategory')?.addEventListener('change',renderStockQuick);document.getElementById('stockQuickSearch')?.addEventListener('input',renderStockQuick);pimage.addEventListener('input',updateProductImagePreview);
+let selectedTicketId='';
+function ticketCustomer(t){
+  const messages=Array.isArray(t.messages)?t.messages:[];
+  const first=messages.find(m=>m.sender_role!=='owner')||messages[0]||{};
+  return {name:String(t.customer_name||t.name||first.name||'Cliente'),email:String(t.customer_email||t.email||first.email||'')};
+}
+function renderTickets(){
+  const box=document.getElementById('tickets');if(!box)return;
+  const tickets=(data.tickets||[]).filter(t=>String(t.status||'').toLowerCase()!=='resolved');
+  if(selectedTicketId && !tickets.some(t=>String(t.id)===String(selectedTicketId)))selectedTicketId='';
+  const selected=tickets.find(t=>String(t.id)===String(selectedTicketId));
+  const list=tickets.map(t=>{const c=ticketCustomer(t);return `<button type="button" class="ticket-list-item ${String(t.id)===String(selectedTicketId)?'active':''}" onclick="openTicket('${esc(t.id)}')"><span class="ticket-list-avatar">${esc(c.name.slice(0,1).toUpperCase())}</span><span class="ticket-list-info"><b>${esc(c.name)}</b><small>${esc(c.email||'Gmail não informado')}</small></span><span class="ticket-list-enter">Entrar →</span></button>`}).join('');
+  const detail=selected?renderTicketDetail(selected):`<div class="ticket-empty-detail"><div>🎫</div><b>Selecione um ticket</b><span>Escolha uma pessoa na lista ao lado para entrar no atendimento e responder.</span></div>`;
+  box.innerHTML=`<div class="tickets-manager"><aside class="tickets-list-panel"><div class="tickets-list-head"><div><b>Tickets abertos</b><small>${tickets.length} atendimento${tickets.length===1?'':'s'}</small></div></div><div class="tickets-list">${list||'<p class="muted" style="padding:18px">Nenhum ticket aberto.</p>'}</div></aside><section class="ticket-detail-panel">${detail}</section></div>`;
+}
+function openTicket(id){selectedTicketId=String(id);__openTicketSignature='';renderTickets();syncOpenTicket();}
+function renderTicketDetail(t){
+  const messages=Array.isArray(t.messages)?t.messages:[];const c=ticketCustomer(t);
+  return `<div class="ticket-chat ticket-chat-selected"><div class="ticket-chat-head"><div class="ticket-chat-person"><div class="ticket-chat-avatar">${esc(c.name.slice(0,1).toUpperCase())}</div><div><b>${esc(c.name)}</b><small>${esc(c.email||'Gmail não informado')}</small></div></div><span class="ticket-chat-status">ABERTO</span></div><div class="ticket-chat-messages">${messages.map(m=>`<div class="ticket-chat-msg ${m.sender_role==='owner'?'owner':''}"><b>${esc(m.name||c.name)}</b><div>${esc(m.message)}</div></div>`).join('')||'<div class="ticket-chat-empty">Nenhuma mensagem.</div>'}</div><textarea id="reply-${esc(t.id)}" class="ticket-chat-input" placeholder="Escreva uma resposta..."></textarea><div class="ticket-chat-actions"><button onclick="reply('${esc(t.id)}')">Responder</button><button type="button" class="ticket-close-btn" onclick="closeTicket('${esc(t.id)}',this)">🔒 Fechar ticket</button></div></div>`;
+}
+async function reply(id){const el=document.getElementById('reply-'+id);const m=el?el.value.trim():'';if(!m)return alert('Digite uma mensagem.');try{await api('tickets/reply',{method:'POST',body:JSON.stringify({ticketId:id,message:m,status:'open'})});await load()}catch(e){alert(e.message)}}
+async function closeTicket(id,button){
+  if(!button||button.dataset.closing==='1')return;
+  button.dataset.closing='1';button.disabled=true;
+  let left=5;const original=button.textContent;button.textContent=`Fechando em ${left}s...`;
+  const timer=setInterval(()=>{left--;if(left>0)button.textContent=`Fechando em ${left}s...`;},1000);
+  setTimeout(async()=>{
+    clearInterval(timer);
+    try{
+      await api('tickets/reply',{method:'POST',body:JSON.stringify({ticketId:id,message:'Ticket fechado pelo dono.',status:'resolved',closed:true,closedBy:'owner',customerStatus:'closed'})});
+      await load();
+    }catch(e){button.dataset.closing='';button.disabled=false;button.textContent=original;alert(e.message)}
+  },5000);
+}
+const AUTO_EXPIRE_MS=30*60*1000;
+function orderCreatedMs(o){
+  const raw=o.createdAt||o.created_at||o.created||o.created_at_iso||o.updatedAt||o.updated_at;
+  const t=raw?new Date(raw).getTime():NaN;
+  return Number.isFinite(t)?t:0;
+}
+function isPendingOrder(o){
+  const s=String(o.status||'').toLowerCase();
+  return ['pending','created','waiting','awaiting_payment','unpaid',''].includes(s);
+}
+function renderOrders(){
+  const body=document.getElementById('ordersBody');
+  if(!body)return;
+  body.innerHTML=(data.orders||[]).map(o=>{
+    const status=String(o.status||'').toLowerCase();
+    if(['expired','cancelled','canceled'].includes(status))return '';
+    const delivered=status==='delivered';
+    const paid=['received','paid','approved','delivered'].includes(status);
+    const items=(o.items||[]).map(i=>esc(i.name)+' × '+i.qty).join('<br>');
+    const roblox=o.roblox||o.roblox_profile||{};
+    const nick=o.nick||o.nickname||roblox.displayName||roblox.name||o.robloxName||'';
+    const relatedTicket=(data.tickets||[]).find(t=>String(t.order_id||t.orderId||'')===String(o.id||o.order_id||''));
+    const pending=isPendingOrder(o);
+    const liveLabel=pending?'🟡 Aguardando pagamento':'🟢 '+kanekiOrderStatusLabel(status);
+    return `<tr class="${pending?'order-pending-row':''}">
+      <td>${new Date(o.createdAt||o.created_at||Date.now()).toLocaleString('pt-BR')}</td>
+      <td><b>${esc(o.name||o.email||'Cliente')}</b><br>${esc(o.email||'')}${nick?`<br><span class="order-nick">🎮 Nick: <b>${esc(nick)}</b></span>`:''}${relatedTicket?`<br><span class="order-ticket-live">🎫 Ticket aberto</span>`:''}</td>
+      <td>${items||'—'}</td>
+      <td>${money(o.total)}</td>
+      <td><span class="order-status-pill ${delivered?'done':paid?'paid':''}">${esc(liveLabel)}</span></td>
+      <td><div class="order-actions">${delivered?'<span class="order-delivered">✓ Produto entregue</span>':`<div class="order-actions-stack"><button type="button" onclick="approveOrder('${esc(o.id)}',this)">💳 Aprovar pagamento</button><button type="button" class="secondary" onclick="approveAndDeliverOrder('${esc(o.id)}',this)">📦 Aprovar e entregar</button></div>`}</div></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="6">Nenhuma compra aguardando ou registrada.</td></tr>';
+}
+let __expireSweepBusy=false;
+async function expireStaleOrders(){
+  if(__expireSweepBusy)return;
+  __expireSweepBusy=true;
+  try{
+    const now=Date.now();
+    const stale=(data.orders||[]).filter(o=>isPendingOrder(o)&&orderCreatedMs(o)>0&&(now-orderCreatedMs(o)>=AUTO_EXPIRE_MS));
+    for(const o of stale){
+      let ok=false;
+      const payload={orderId:o.id||o.order_id,status:'expired',paymentStatus:'expired',reason:'Pagamento não realizado em 30 minutos',expired:true};
+      for(const route of ['admin/order','admin/orders']){
+        try{await api(route,{method:'POST',body:JSON.stringify(payload)});ok=true;break}catch(e){}
+      }
+      if(ok){
+        o.status='expired';
+        o.paymentStatus='expired';
+      }
+    }
+    if(stale.length)renderOrders();
+  }finally{__expireSweepBusy=false}
+}
+async function approveOrder(id,button){
+  if(!id||button?.disabled)return;
+  if(button){button.disabled=true;button.textContent='Aprovando...'}
+  try{
+    let lastError=null;
+    const payloads=[
+      ['admin/order',{orderId:id,status:'approved',paymentStatus:'approved'}],
+      ['admin/orders',{orderId:id,status:'approved',paymentStatus:'approved'}]
+    ];
+    for(const [route,body] of payloads){try{await api(route,{method:'POST',body:JSON.stringify(body)});lastError=null;break}catch(e){lastError=e}}
+    if(lastError)throw lastError;
+    await load();
+  }catch(e){if(button){button.disabled=false;button.textContent='✅ Aprovar pedido'}alert('Não foi possível aprovar o pagamento pelo servidor: '+(e.message||'rota não disponível.'))}
+}
+async function approveAndDeliverOrder(id,button){
+  if(!id||button?.disabled)return;
+  if(button) {button.disabled=true;button.textContent='Processando...'}
+  try{
+    let lastError=null;
+    const payloads=[
+      ['admin/order',{orderId:id,status:'delivered',paymentStatus:'approved',autoDeliver:true}],
+      ['admin/orders',{orderId:id,status:'delivered',paymentStatus:'approved',autoDeliver:true}]
+    ];
+    for(const [route,body] of payloads){
+      try{await api(route,{method:'POST',body:JSON.stringify(body)});lastError=null;break}catch(e){lastError=e}
+    }
+    if(lastError)throw lastError;
+    await load();
+  }catch(e){
+    if(button){button.disabled=false;button.textContent='✅ Aprovar compra e entregar'}
+    alert('Não foi possível atualizar este pedido pelo servidor: '+(e.message||'rota não disponível.'));
+  }
+}
+async function fileToData(file,folder='site'){if(!file)return '';if(file.size>10000000)throw Error('O arquivo deve ter no máximo 10 MB.');const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=reject;r.readAsDataURL(file)});const out=await api('admin/upload',{method:'POST',body:JSON.stringify({data,filename:file.name,mime:file.type||'application/octet-stream',folder})});return out.url||''}
+sLogoFile.onchange=async()=>{try{const v=await fileToData(sLogoFile.files[0],'site');if(v)sLogoUrl.value=v}catch(e){alert(e.message)}};
+sBackgroundImageFile.onchange=async()=>{try{const v=await fileToData(sBackgroundImageFile.files[0],'site');if(v)sBackgroundImageUrl.value=v}catch(e){alert(e.message)}};
+sHeroBackgroundFile.onchange=async()=>{try{const v=await fileToData(sHeroBackgroundFile.files[0],'banner');if(v)sHeroBackgroundUrl.value=v}catch(e){alert(e.message)}};
+sHeroMediaFile.onchange=async()=>{try{const f=sHeroMediaFile.files[0];if(!f)return;if(f.size>4000000)throw Error('A mídia deve ter no máximo 4 MB. Para vídeos maiores, use uma URL pública.');const v=await fileToData(f,'banner');if(v)sHeroMediaUrl.value=v;sHeroMediaType.value=f.type==='image/gif'?'gif':(f.type.startsWith('video/')?'video':'image')}catch(e){alert(e.message)}};
+pimageFile.onchange=async()=>{try{const v=await fileToData(pimageFile.files[0],'products');if(v){pimage.value=v;updateProductImagePreview()}}catch(e){alert(e.message)}};
+document.getElementById('saveFullEditor').onclick=async()=>{const body={};document.querySelectorAll('[data-full-key]').forEach(x=>body[x.dataset.fullKey]=x.value);try{await api('admin/settings',{method:'POST',body:JSON.stringify(body)});alert('Todas as alterações do site foram salvas!');load()}catch(e){alert(e.message)}};
+
+function addOwnerSectionHeaders(){
+  document.querySelectorAll('#app > .panel').forEach(panel=>{
+    if(!OWNER_SECTIONS.includes(panel.id) || panel.querySelector('.admin-section-nav')) return;
+    const nav=document.createElement('div');
+    nav.className='admin-section-nav';
+    nav.innerHTML='<button type="button" class="btn secondary back-dashboard">← Menu do painel</button><span class="section-title">Você está nesta área do painel</span>';
+    nav.querySelector('button').onclick=()=>setOwnerSection('site-banner',true);
+    panel.insertBefore(nav,panel.firstChild);
+  });
+}
+const originalSetOwnerSection=setOwnerSection;
+setOwnerSection=function(id,updateHash=true){
+  originalSetOwnerSection(id,updateHash);
+  addOwnerSectionHeaders();
+};
+load().then(()=>expireStaleOrders()).catch(()=>{});
+
+/* Atualização rápida dos atendimentos: mantém a conversa aberta sincronizada sem recarregar a página. */
+let __ticketSyncBusy=false;
+let __openTicketSignature='';
+function ownerTicketSignature(t){return JSON.stringify({id:t?.id,status:t?.status,updated:t?.updatedAt||t?.updated_at,m:(t?.messages||[]).map(x=>({id:x.id,created:x.createdAt||x.created_at,message:x.message,sender:x.sender_role}))});}
+async function syncOpenTicket(){
+  if(__ticketSyncBusy || !window.__adminInitialSectionSet || !selectedTicketId)return;
+  __ticketSyncBusy=true;
+  try{
+    const t=await api('admin/tickets');
+    const tickets=t.tickets||[];
+    const fresh=tickets.find(x=>String(x.id)===String(selectedTicketId));
+    if(fresh){
+      const i=(data.tickets||[]).findIndex(x=>String(x.id)===String(selectedTicketId));
+      if(i>=0)data.tickets[i]=fresh;else data.tickets.push(fresh);
+      const sig=ownerTicketSignature(fresh);
+      const detail=document.querySelector('#tickets .ticket-detail-panel');
+      if(detail && sig!==__openTicketSignature){
+        const inputBefore=document.getElementById('reply-'+selectedTicketId);
+        const keep=inputBefore?.value||'';
+        const focused=document.activeElement?.id==='reply-'+selectedTicketId;
+        const start=inputBefore?.selectionStart,end=inputBefore?.selectionEnd;
+        const atBottom=(()=>{const box=detail.querySelector('.ticket-chat-messages');return !box||box.scrollHeight-box.scrollTop-box.clientHeight<90})();
+        detail.innerHTML=renderTicketDetail(fresh);
+        const input=document.getElementById('reply-'+selectedTicketId);
+        if(input){input.value=keep;if(focused){input.focus();try{input.setSelectionRange(start??input.value.length,end??input.value.length)}catch{}}}
+        if(atBottom){const box=detail.querySelector('.ticket-chat-messages');if(box)box.scrollTop=box.scrollHeight;}
+        __openTicketSignature=sig;
+      }
+    }else{renderTickets();__openTicketSignature=''}
+  }catch(e){}finally{__ticketSyncBusy=false}
+}
+setInterval(syncOpenTicket,1200);
+setInterval(async()=>{
+
+  if(!window.__adminInitialSectionSet)return;
+  try{
+    const [d,t]=await Promise.all([api('admin/summary'),api('admin/tickets')]);
+    let users=Array.isArray(d?.users)?d.users:[];
+    if(!users.length){
+      const userRoutes=['admin/users','admin/customers','users'];
+      for(const route of userRoutes){try{const u=await api(route);const list=u?.users||u?.customers||u?.data||[];if(Array.isArray(list)&&list.length){users=list;break}}catch(_){} }
+    }
+    let mergedOrders=Array.isArray(d?.orders)?[...d.orders]:[];
+    for(const route of ['admin/orders','admin/pending-orders','admin/checkout-sessions']){try{const od=await api(route);const list=od?.orders||od?.data||od?.pendingOrders||od?.sessions||[];if(Array.isArray(list)&&list.length){const seen=new Set(mergedOrders.map(x=>String(x.id||x.order_id||x.orderKey||x.order_key)));for(const item of list){const key=String(item.id||item.order_id||item.orderKey||item.order_key);if(!seen.has(key)){mergedOrders.push(item);seen.add(key)}}}}catch(_){} }
+    data={...d,orders:mergedOrders,users,tickets:t.tickets||[]};
+    document.getElementById('users').textContent=users.length;
+    document.getElementById('orders').textContent=mergedOrders.length;
+    document.getElementById('ticketsCount').textContent=(d.tickets||[]).length;
+    if(!selectedTicketId) renderTickets(); else syncOpenTicket();
+    renderOrders();renderAdminUsers(users);
+    document.getElementById('logs').innerHTML=d.logs.map(l=>`<div class="msg"><b>${esc(l.action)}</b> — ${new Date(l.at).toLocaleString('pt-BR')} — ${esc(l.email||'visitante')}</div>`).join('')||'<span class="muted">Sem logs.</span>';
+  }catch(e){console.warn('Atualização automática do painel:',e.message)}
+},5000);
+</script><style id="final-admin-purple">.brand span{color:#e21b23!important}.btn,button{background:#fff!important;color:#080808!important;border:1px solid #fff!important}.btn:hover,button:hover,.btn:active,button:active{background:#e21b23!important;color:#fff!important;border-color:#e21b23!important}.msg.owner{border-left-color:#e21b23!important}</style>
+<style id="kaneki-admin-tickets-polish">
+/* Painel do dono: visual mais limpo e tickets com ação de fechamento explícita. */
+#tickets-section{background:linear-gradient(145deg,#0d0a0c,#130b10)!important;border:1px solid rgba(226,27,35,.38)!important;box-shadow:0 18px 55px rgba(0,0,0,.28)!important;}
+#tickets{display:grid;gap:14px;}
+.ticket{position:relative!important;padding:18px!important;border-radius:16px!important;background:linear-gradient(145deg,#151014,#0c0b0e)!important;border:1px solid rgba(226,27,35,.22)!important;box-shadow:0 10px 28px rgba(0,0,0,.22)!important;}
+.ticket:hover{border-color:rgba(226,27,35,.5)!important;transform:translateY(-1px);}
+.ticket .actions{display:flex!important;align-items:center!important;gap:9px!important;flex-wrap:wrap!important;}
+.ticket .ticket-close-btn{background:#8e1118!important;color:#fff!important;border-color:#c91c28!important;}
+.ticket .ticket-close-btn:hover:not(:disabled){background:#e21b23!important;}
+.ticket .ticket-close-btn:disabled{opacity:.65!important;cursor:default!important;}
+.owner-dashboard-grid{gap:12px!important;}
+.owner-dashboard-grid .owner-nav-card{border-radius:16px!important;border:1px solid rgba(226,27,35,.22)!important;background:linear-gradient(145deg,#151014,#0c0b0e)!important;transition:.18s ease!important;}
+.owner-dashboard-grid .owner-nav-card:hover{border-color:#e21b23!important;transform:translateY(-2px)!important;box-shadow:0 12px 30px rgba(226,27,35,.13)!important;}
+@media(max-width:700px){.ticket .actions>*{flex:1 1 100%;}.ticket .actions select{width:100%;}}
+</style>
+
+<script id="delegated-admin-and-ticket-close-fix">
+(function(){
+  const originalLoad=window.load;
+  // A conta autorizada deve conseguir abrir o painel; o backend continua sendo a autoridade final.
+  // Mantemos o painel de permissões visível somente para o dono.
+  window.__kanekiDelegatedAdminFix=true;
+})();
+</script>
+<script id="kaneki-custom-dialog-script">
+(function(){
+  let overlay=null, messageEl=null, titleEl=null, iconEl=null, actionsEl=null, queue=[], active=null;
+  function ensure(){
+    if(overlay)return;
+    overlay=document.createElement('div');overlay.id='kanekiDialogOverlay';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');
+    overlay.innerHTML='<div class="kaneki-dialog-card"><div class="kaneki-dialog-glow"></div><div class="kaneki-dialog-icon" aria-hidden="true">!</div><h2 class="kaneki-dialog-title">Atenção</h2><p class="kaneki-dialog-message"></p><div class="kaneki-dialog-actions"></div></div>';
+    document.body.appendChild(overlay);messageEl=overlay.querySelector('.kaneki-dialog-message');titleEl=overlay.querySelector('.kaneki-dialog-title');iconEl=overlay.querySelector('.kaneki-dialog-icon');actionsEl=overlay.querySelector('.kaneki-dialog-actions');
+    overlay.addEventListener('click',e=>{if(e.target===overlay && active?.type==='alert')finishAlert()});
+    document.addEventListener('keydown',e=>{if(!overlay?.classList.contains('show'))return;if(e.key==='Escape'){if(active?.type==='confirm')finishConfirm(false);else finishAlert();}});
+  }
+  function finishAlert(){if(!active)return;const a=active;active=null;overlay.classList.remove('show');document.body.style.removeProperty('overflow');a.resolve();setTimeout(next,80)}
+  function finishConfirm(value){if(!active)return;const a=active;active=null;overlay.classList.remove('show');document.body.style.removeProperty('overflow');a.resolve(value);setTimeout(next,80)}
+  function render(item){ensure();active=item;messageEl.textContent=String(item.message??'');titleEl.textContent=item.title||'Atenção';iconEl.textContent=item.type==='confirm'?'?':'!';actionsEl.innerHTML='';
+    if(item.type==='confirm'){
+      const cancel=document.createElement('button');cancel.type='button';cancel.className='kaneki-dialog-btn secondary';cancel.textContent='Cancelar';cancel.addEventListener('click',()=>finishConfirm(false));
+      const ok=document.createElement('button');ok.type='button';ok.className='kaneki-dialog-btn';ok.textContent='Confirmar';ok.addEventListener('click',()=>finishConfirm(true));actionsEl.append(cancel,ok);overlay.classList.add('show');document.body.style.overflow='hidden';requestAnimationFrame(()=>ok.focus());
+    }else{
+      const ok=document.createElement('button');ok.type='button';ok.className='kaneki-dialog-btn';ok.textContent='OK';ok.addEventListener('click',finishAlert);actionsEl.append(ok);overlay.classList.add('show');document.body.style.overflow='hidden';requestAnimationFrame(()=>ok.focus());
+    }
+  }
+  function next(){if(active||!queue.length)return;render(queue.shift())}
+  window.alert=function(message){ensure();queue.push({type:'alert',message,title:'Atenção',resolve:()=>{}});next()};
+  window.kanekiConfirm=function(message){ensure();return new Promise(resolve=>{queue.push({type:'confirm',message,title:'Confirmação',resolve});next()})};
+})();
+</script>
+</body></html>
