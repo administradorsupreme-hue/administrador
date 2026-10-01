@@ -1,0 +1,7 @@
+{
+  "name": "kaneki-store-vercel",
+  "version": "5.0.0",
+  "private": true,
+  "engines": { "node": "22.x" },
+  "dependencies": { "pg": "^8.16.3" }
+}
