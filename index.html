@@ -37,8 +37,8 @@
 <script>
 (()=>{'use strict';
 // CONFIGURE estes dois valores com os dados do seu projeto Supabase (Project Settings > API).
-const SUPABASE_URL = "COLE_AQUI_A_URL_DO_PROJETO";
-const SUPABASE_ANON_KEY = "COLE_AQUI_A_CHAVE_PUBLICA_PUBLISHABLE";
+const SUPABASE_URL = "https://fwbbzolbuapzylkfrnxw.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_hX1nxQNKblrtsWP0HjsgzA_i5pf1VaJ";
 const supabaseReady = Boolean(window.supabase && SUPABASE_URL.startsWith("https://") && !SUPABASE_URL.includes("COLE_AQUI") && SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes("COLE_AQUI"));
 const sb = supabaseReady ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 let currentUser = null;
