@@ -1,0 +1,6 @@
+{
+  "name": "kaneki-store",
+  "private": true,
+  "type": "module",
+  "dependencies": { "@supabase/supabase-js": "^2.57.0" }
+}

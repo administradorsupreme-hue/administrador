@@ -1,0 +1,32 @@
+KANEKI — Supabase + Netlify + EclipSePay
+
+Esta versão inclui:
+- Netlify Functions configuradas no netlify.toml.
+- POST /.netlify/functions/create-charge: exige sessão Supabase, busca preço no catálogo
+  public.products no servidor, cria pedido/itens e chama POST https://eclipsepaybr.com/v1/charges.
+- GET /.netlify/functions/get-charge-status?orderId=...: exige sessão do comprador,
+  consulta GET /v1/charges/{id} na EclipsePay, compara ID, tipo e valor e atualiza o estado do pedido.
+- Esquema inicial em supabase/migrations/202610220001_kaneki_store.sql.
+- Exemplo de variáveis em .env.example.
+
+DOCUMENTAÇÃO DA ECLIPSEPAY
+POST /v1/charges usa Authorization: Bearer ECLIPSE_API_KEY, Content-Type: application/json,
+Idempotency-Key: UUID e corpo { amountCents, description }. O valor deve estar entre
+80 e 100000 centavos. A resposta inclui id, status e brCode quando pendente.
+GET /v1/charges/{id} permite consultar status. Entregar somente quando status=completed.
+Fonte: https://eclipsepaybr-com.mintlify.site/guias/receber-pix
+
+AINDA NÃO PRONTO PARA PRODUÇÃO
+- O checkout da página index.html ainda é demonstrativo e precisa ser ligado a estas funções.
+- O catálogo precisa ser migrado/cadastrado em public.products com preços reais; nunca confiar no preço do navegador.
+- A entrega automática de códigos/arquivos exige a função transacional de reservar e entregar itens de digital_inventory.
+- O webhook continua bloqueado até implementar o cabeçalho e a validação HMAC exatos da EclipSePay.
+- A migração SQL deve ser revisada contra o esquema existente antes de executar.
+- O código não foi testado com credenciais reais nem com uma conta EclipsePay.
+
+NETLIFY ENVIRONMENT VARIABLES
+SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY
+ECLIPSE_API_KEY
+
+Não coloque chaves secretas no frontend. Configure no painel Netlify e faça deploy novo.
