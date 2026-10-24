@@ -29,7 +29,7 @@ export default async function handler(req, res) {
       });
       charge = await res.json();
     } catch { return response(res, 502, { error: "Não foi possível consultar a EclipsePay." }); }
-    if (!res.ok || charge?.id !== order.provider_charge_id) return response(res, 502, { error: "Falha ao verificar a cobrança na EclipsePay." });
+    if (!res.ok || String(charge?.id ?? "") !== String(order.provider_charge_id)) return response(res, 502, { error: "Falha ao verificar a cobrança na EclipsePay." });
     // create-charge salva total_cents já incluindo a taxa fixa de R$ 0,50.
     // Não somar a taxa novamente: isso rejeitaria pagamentos válidos por R$ 0,50 de diferença.
     const expectedChargeCents = Number(order.total_cents);
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
       return response(res, 409, { error: "O valor confirmado pela EclipsePay não corresponde ao total registrado do pedido (incluindo a taxa fixa de R$ 0,50)." });
     }
 
-    if (charge.status === "completed" && order.status === "pending") {
+    if (["completed", "paid"].includes(charge.status) && order.status === "pending") {
       const { error: updateError } = await db.from("orders").update({
         status: "paid", paid_at: new Date().toISOString(), updated_at: new Date().toISOString()
       }).eq("id", order.id).eq("status", "pending");
@@ -49,7 +49,7 @@ export default async function handler(req, res) {
     } else if (charge.status === "failed" && order.status === "pending") {
       await db.from("orders").update({ status: "failed", updated_at: new Date().toISOString() }).eq("id", order.id);
       verifiedStatus = "failed";
-    } else if (charge.status === "completed") {
+    } else if (["completed", "paid"].includes(charge.status)) {
       verifiedStatus = order.status;
     } else {
       verifiedStatus = charge.status;
@@ -85,7 +85,7 @@ export default async function handler(req, res) {
 
   return response(res, 200, {
     orderId: latestOrder.id,
-    paymentStatus: verifiedStatus === "fulfilled" ? "completed" : verifiedStatus,
+    paymentStatus: ["fulfilled", "paid"].includes(verifiedStatus) ? "completed" : verifiedStatus,
     orderStatus: latestOrder.status,
     deliveryStatus: latestOrder.status === "fulfilled" ? "delivered" : latestOrder.status === "paid" ? "waiting_stock" : "pending",
     paidAt: latestOrder.paid_at,
