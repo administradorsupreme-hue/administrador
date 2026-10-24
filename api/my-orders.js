@@ -16,4 +16,5 @@ export default async function handler(req,res){
  const {data:items,error:itemsError}=await db.from('order_items').select('order_id,product_name,quantity,unit_price_cents').in('order_id',ids);
  if(itemsError)return res.status(500).json({error:'Não foi possível carregar os itens dos pedidos.'});
  return res.status(200).json({orders:orders.map(o=>({...o,items:(items||[]).filter(i=>i.order_id===o.id).map(({product_name,quantity,unit_price_cents})=>({product_name,quantity,unit_price_cents}))}))});
-}
+
+ 
