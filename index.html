@@ -163,7 +163,16 @@ body:before{content:"";position:fixed;inset:0;background-image:var(--kc-design-b
 body.kc-rays-on .hero:after{content:"";position:absolute;inset:0;pointer-events:none;opacity:var(--kc-lightning-opacity);background:linear-gradient(112deg,transparent 20%,var(--kc-lightning) 21%,transparent 22%,transparent 51%,var(--kc-lightning) 52%,transparent 53%),linear-gradient(65deg,transparent 40%,var(--kc-lightning) 41%,transparent 42%);background-size:180% 180%;mix-blend-mode:screen;animation:kc-rays var(--kc-lightning-speed) linear infinite}
 @keyframes kc-rays{from{background-position:0 0}to{background-position:180% 140%}}
 @media(prefers-reduced-motion:reduce){body.kc-rays-on .hero:after{animation:none}}
-</style></head>
+</style><style id="kc-background-continuity-fix">
+/* Fundo único contínuo, sem cortes entre seções, em PC e celular. */
+html,body{min-height:100%;background-color:var(--site-background)}
+body::before{position:fixed!important;inset:0!important;width:100%!important;height:100dvh!important;background-image:var(--kc-design-bg-image)!important;background-size:contain!important;background-repeat:no-repeat!important;background-position:center center!important;opacity:var(--kc-design-bg-opacity)!important;z-index:0!important;pointer-events:none!important}
+.shell{position:relative!important;z-index:1!important;background:transparent!important}
+#page-home .hero{background:radial-gradient(ellipse at 75% 5%,#27234e99 0,transparent 40%),radial-gradient(ellipse at 8% 80%,#151e3b99 0,transparent 35%),transparent!important}
+#page-home>.section{background:transparent!important}
+@media(max-width:760px){body::before{height:100dvh!important;background-size:contain!important;background-position:center center!important}}
+</style>
+</head>
 <body><div class="shell">
 <div class="announcement"><strong>✦ OFERTA DE BOAS-VINDAS</strong> Experiência premium, entrega rápida e suporte dedicado</div>
 <header class="header"><div class="nav"><a href="#home" class="brand" data-route="home"><span class="brand-mark">CCG</span><span class="brand-copy"><span>CCG</span>.QUINQUES</span></a><nav class="navlinks" aria-label="Navegação"><a href="#home" data-route="home">Início</a><a href="#products" data-route="products">Loja</a><a href="#points" data-route="points">Loja de pontos</a><a href="#community" data-route="community">Comunidade</a><a href="#affiliate" data-route="affiliate">Afiliado</a></nav><div class="nav-actions"><button class="icon-btn" aria-label="Buscar produtos" data-action="focus-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></button><button class="icon-btn" aria-label="Carrinho" data-action="cart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4h2l2.5 11h10.8L21 8H6"/><circle cx="9" cy="19" r="1.2"/><circle cx="18" cy="19" r="1.2"/></svg><span class="count" id="cart-count">0</span></button><button class="btn btn-primary login-btn" data-route="login" data-auth-nav="true" hidden style="display:none">Entrar</button><button class="icon-btn mobile-menu" aria-label="Abrir menu" data-action="mobile-menu">☰</button></div></div></header>
@@ -374,133 +383,4 @@ window.addEventListener('popstate',routeFromHash);$('#year').textContent=new Dat
  async function token(){if(!window.__ccgAdminBridge?.getClient())throw new Error('O login ainda não está disponível.');const {data,error}=await window.__ccgAdminBridge.getClient().auth.getSession();if(error||!data.session?.access_token)throw new Error('Entre na sua conta para acessar os tickets.');return data.session.access_token}
  async function api(url,method='GET',body){const t=await token();const r=await fetch(url,{method,headers:{Authorization:'Bearer '+t,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Falha ao acessar o suporte.');return d}
  function ensurePanel(){let p=document.getElementById('kaneki-ticket-panel');if(p)return p;p=document.createElement('div');p.id='kaneki-ticket-panel';p.style.cssText='position:fixed;inset:0;z-index:100001;background:#070811f5;display:none;overflow:auto;padding:16px;color:#f7f7ff;font:14px system-ui';p.innerHTML='<div style="max-width:900px;margin:20px auto;background:#111426;border:1px solid #343956;border-radius:18px;padding:18px"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><h2 style="margin:0">Meus tickets de suporte</h2><button data-ticket-action="close" class="btn btn-outline">Fechar</button></div><p id="kt-status" style="color:#b5b9d2">Carregando...</p><div id="kt-list"></div><div id="kt-thread" style="display:none;margin-top:16px"></div></div>';document.body.appendChild(p);return p}
- async function loadList(){const p=ensurePanel();p.style.display='block';document.getElementById('kt-status').textContent='Carregando tickets...';document.getElementById('kt-thread').style.display='none';try{const d=await api('/api/tickets');const list=document.getElementById('kt-list');if(!d.tickets.length){list.innerHTML='<p>Você ainda não tem tickets. Um ticket é criado automaticamente após a confirmação do pagamento.</p>';document.getElementById('kt-status').textContent='';return}list.innerHTML=d.tickets.map(t=>`<button data-ticket-action="open-ticket" data-ticket-id="${esc(t.id)}" style="display:block;width:100%;text-align:left;background:#191d32;border:1px solid #343956;color:white;border-radius:12px;padding:14px;margin:8px 0"><b>${esc(t.subject)}</b><div style="color:#b5b9d2;margin-top:5px">Pedido: ${esc(t.order_id)} · Status: ${esc(t.status)} · ${esc(new Date(t.last_message_at).toLocaleString('pt-BR'))}</div></button>`).join('');document.getElementById('kt-status').textContent='Selecione um ticket para ver e enviar mensagens.'}catch(e){document.getElementById('kt-status').textContent=e.message;document.getElementById('kt-list').innerHTML=''}}
- async function openTicket(id){try{const d=await api('/api/tickets?mode=messages?ticketId='+encodeURIComponent(id));const thread=document.getElementById('kt-thread');thread.style.display='block';thread.dataset.ticketId=id;thread.innerHTML=`<h3>Conversa do pedido ${esc(d.ticket.order_id)}</h3><div style="max-height:45vh;overflow:auto">${d.messages.map(m=>`<div style="margin:8px 0;padding:12px;border-radius:10px;background:${m.sender_role==='admin'?'#202a45':'#191d32'}"><b>${m.sender_role==='admin'?'Suporte KaneKi':'Você'}</b><small style="display:block;color:#b5b9d2">${esc(new Date(m.created_at).toLocaleString('pt-BR'))}</small><p style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(m.message)}</p>${(m.attachments||[]).map(a=>a.url?`<div style="margin-top:8px">📎 <a target="_blank" rel="noopener" href="${esc(a.url)}" style="color:#b9adff">${esc(a.name)}</a> <small>(${Math.ceil(a.size/1024)} KB)</small></div>`:'').join('')}</div>`).join('')||'<p>Esta conversa ainda não tem mensagens.</p>'}</div><textarea id="kt-message" rows="3" maxlength="5000" placeholder="Escreva sua mensagem..." style="width:100%;box-sizing:border-box;margin-top:12px;padding:12px;border-radius:10px;background:#0b0d19;color:white;border:1px solid #343956"></textarea><label style="display:block;margin-top:10px">Anexar arquivos (até 5 arquivos, 10 MB cada)<input id="kt-files" type="file" multiple accept="image/*,.pdf,.txt,.zip,.docx,.xlsx" style="display:block;margin-top:7px;max-width:100%"></label><button class="btn btn-primary" data-ticket-action="send" style="margin-top:8px">Enviar mensagem/arquivos</button>`}catch(e){document.getElementById('kt-status').textContent=e.message}}
- document.addEventListener('click',e=>{const b=e.target.closest('[data-ticket-action]');if(!b)return;const a=b.dataset.ticketAction;if(a==='open-list')loadList().catch(err=>alert(err.message));if(a==='close')ensurePanel().style.display='none';if(a==='open-ticket')openTicket(b.dataset.ticketId);if(a==='send'){const thread=document.getElementById('kt-thread'),id=thread.dataset.ticketId,el=document.getElementById('kt-message'),files=[...(document.getElementById('kt-files')?.files||[])],message=el.value.trim();(async()=>{if(!message&&!files.length)return alert('Escreva uma mensagem ou escolha um arquivo.');if(files.length>5)throw new Error('Anexe no máximo 5 arquivos por mensagem.');const {data:sessionData}=await sb.auth.getSession();const user=sessionData.session?.user;if(!user)throw new Error('Faça login novamente.');let attachments=[],total=0;for(const file of files){if(file.size>8000000)throw new Error('Cada arquivo deve ter até 10 MB.');total+=file.size;if(total>20971520)throw new Error('O total por mensagem deve ser até 20 MB.');const allowed=['image/jpeg','image/png','image/webp','application/pdf'];if(!allowed.includes(file.type))throw new Error('Tipo de arquivo não permitido: '+file.name);const path=id+'/'+user.id+'/'+crypto.randomUUID()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');const {error}=await sb.storage.from('kaneki-ticket-files').upload(path,file,{contentType:file.type,upsert:false});if(error)throw new Error('Falha ao anexar '+file.name+': '+error.message);attachments.push({path,name:file.name,mime:file.type,size:file.size})}await api('/api/tickets?mode=messages','POST',{ticketId:id,message,attachments});await openTicket(id)})().catch(err=>alert(err.message))}});
- window.kanekiSupportTickets={open:loadList};
-})();
-</script>
-<a id="kaneki-admin-orb" hidden href="/admin.html" aria-label="Painel administrativo" title="Painel administrativo" style="position:fixed;right:20px;bottom:20px;z-index:10000;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:white;font-size:16px;background:radial-gradient(circle at 50% 60%,#1c0938 12%,#5921aa 54%,#fb5138 85%);border:1px solid #ffae4c;box-shadow:0 0 8px #ff612b99,0 0 15px #f9277966">✦</a><script>
-/* Exibe o atalho apenas após autorização confirmada pelo servidor. */
-(function(){const orb=document.getElementById("kaneki-admin-orb");if(!orb)return;orb.style.display="none";let seq=0;async function check(){const id=++seq;orb.style.display="none";orb.hidden=true;try{const sb=window.__ccgAdminBridge?.getClient?.();if(!sb)return;const {data}=await sb.auth.getSession();const token=data.session?.access_token;if(!token)return;const r=await fetch("/api/admin?action=access",{headers:{Authorization:"Bearer "+token},cache:"no-store"});if(id!==seq||!r.ok)return;const j=await r.json();if(j.allowed===true){orb.hidden=false;orb.style.display="grid"}}catch(e){console.warn("Admin access unavailable",e)}}window.addEventListener("kaneki-owner-auth",check);check()})();
-</script>
-<style id="kaneki-admin-fire-style">
-/* Fogo preto animado em volta da bolinha: apenas visual, sem interferir no clique. */
-#kaneki-admin-orb{isolation:isolate;overflow:visible!important;font-weight:900;text-decoration:none;text-shadow:0 0 5px #e2d5ff;animation:kanekiBlackCore 1.7s ease-in-out infinite alternate}
-#kaneki-admin-orb::before{content:"";position:absolute;inset:-14px -13px -10px;z-index:-1;pointer-events:none;border-radius:46% 55% 48% 42%;background:radial-gradient(ellipse at 45% 78%,#fb692d 0 10%,#30303c 27%,#08080b 48%,transparent 74%),conic-gradient(from 0deg at 50% 65%,transparent,#070709,#4b4b59,#050508,transparent,#08080c,#5c5361,#08080b,transparent);filter:drop-shadow(0 0 3px #9999a5) blur(1.5px);opacity:.96;animation:kanekiBlackFlame .95s ease-in-out infinite alternate}
-#kaneki-admin-orb::after{content:"";position:absolute;inset:-9px -6px -8px;z-index:-1;pointer-events:none;border-radius:60% 40% 55% 45%;background:conic-gradient(from 110deg,#08080b,#44414b,#030305,#15151c,#5c5860,#070709);filter:blur(5px);opacity:.8;animation:kanekiBlackSmoke 1.45s ease-in-out infinite alternate}
-@keyframes kanekiBlackCore{from{box-shadow:0 0 5px #ff652aaa,0 0 11px #12121c}to{box-shadow:0 0 8px #ff773dbb,0 0 16px #53505d}}
-@keyframes kanekiBlackFlame{from{transform:translateY(3px) scale(.91) rotate(-11deg);border-radius:40% 60% 43% 57%}to{transform:translateY(-6px) scale(1.17) rotate(10deg);border-radius:65% 35% 57% 43%}}
-@keyframes kanekiBlackSmoke{from{transform:translate(-3px,2px) scale(.92);opacity:.65}to{transform:translate(4px,-9px) scale(1.12);opacity:.95}}
-@media(prefers-reduced-motion:reduce){#kaneki-admin-orb,#kaneki-admin-orb::before,#kaneki-admin-orb::after{animation:none}}
-</style>
-<style>
-#kaneki-admin-orb{touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;box-sizing:border-box;transition:box-shadow .2s}
-#kaneki-admin-orb.is-dragging{cursor:grabbing;box-shadow:0 0 18px #7c43ffbb!important}
-</style>
-<style>
-#kaneki-admin-orb{position:fixed!important;z-index:2147483000!important;touch-action:none!important;user-select:none!important;-webkit-user-drag:none;cursor:grab}
-#kaneki-admin-orb.is-dragging{cursor:grabbing}
-</style>
-<script>
-(()=>{
- const orb=document.getElementById('kaneki-admin-orb');if(!orb)return;
- const key='kaneki-admin-orb-position-v1';
- let active=null,blockClick=false;
- const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
- function place(x,y){
-   const w=orb.offsetWidth||32,h=orb.offsetHeight||32;
-   orb.dataset.positioned='1';
-   orb.style.setProperty('left',clamp(x,4,Math.max(4,innerWidth-w-4))+'px','important');
-   orb.style.setProperty('top',clamp(y,4,Math.max(4,innerHeight-h-4))+'px','important');
-   orb.style.setProperty('right','auto','important');
-   orb.style.setProperty('bottom','auto','important');
- }
- try{const p=JSON.parse(localStorage.getItem(key)||'null');if(p&&Number.isFinite(p.x)&&Number.isFinite(p.y))place(p.x,p.y)}catch{}
- orb.setAttribute('draggable','false');
- orb.addEventListener('dragstart',e=>e.preventDefault());
- orb.addEventListener('pointerdown',e=>{
-   if(e.button!==0||active)return;
-   const r=orb.getBoundingClientRect();
-   active={id:e.pointerId,x:e.clientX,y:e.clientY,left:r.left,top:r.top,moved:false};
-   orb.classList.add('is-dragging');
-   try{orb.setPointerCapture(e.pointerId)}catch{}
-   e.preventDefault();
- },{passive:false});
- orb.addEventListener('pointermove',e=>{
-   if(!active||e.pointerId!==active.id)return;
-   const dx=e.clientX-active.x,dy=e.clientY-active.y;
-   if(Math.hypot(dx,dy)>4)active.moved=true;
-   if(active.moved){place(active.left+dx,active.top+dy);e.preventDefault()}
- },{passive:false,capture:true});
- function finish(e){
-   if(!active||e.pointerId!==active.id)return;
-   if(active.moved){
-     const r=orb.getBoundingClientRect();
-     try{localStorage.setItem(key,JSON.stringify({x:r.left,y:r.top}))}catch{}
-     blockClick=true;
-   }
-   active=null;orb.classList.remove('is-dragging');
- }
- orb.addEventListener('pointerup',finish);
- orb.addEventListener('pointercancel',finish);
- orb.addEventListener('click',e=>{
-   if(blockClick){e.preventDefault();e.stopImmediatePropagation();blockClick=false}
- },true);
- addEventListener('resize',()=>{if(orb.style.left){const r=orb.getBoundingClientRect();place(r.left,r.top)}});
-})();
-</script><script>
-(()=>{
-const sb=window.__ccgAdminBridge?.getClient?.()||null;
-const refreshAccountSession=()=>window.__ccgAdminBridge?.refreshAccountSession?.();
-const tbody=()=>document.getElementById('customer-orders-body');
-const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const money=n=>(Number(n||0)/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-const statusText={pending:'Aguardando pagamento',paid:'Pagamento confirmado',fulfilled:'Entregue',cancelled:'Cancelado',failed:'Falhou',refunded:'Reembolsado',expired:'Expirado'};
-let loadId=0;
-async function loadOrders(){const target=tbody();if(!target)return;const seq=++loadId;
- target.innerHTML='<tr><td colspan="5" style="text-align:center;padding:28px">Carregando pedidos...</td></tr>';
- try{if(typeof sb==='undefined'||!sb)throw new Error('Login indisponível.');const {data,error}=await sb.auth.getSession();if(error)throw error;
- if(!data.session?.access_token){target.innerHTML='<tr><td colspan="5" style="text-align:center;padding:28px">Entre na sua conta para visualizar seus pedidos.</td></tr>';return;}
- const response=await fetch('/api/my-orders',{headers:{Authorization:'Bearer '+data.session.access_token},cache:'no-store'});
- const result=await response.json();if(!response.ok)throw new Error(result.error||'Falha ao consultar pedidos.');if(seq!==loadId)return;
- const orders=result.orders||[];
- target.innerHTML=orders.length?orders.map(o=>`<tr><td><strong>#${safe(String(o.id).slice(0,8).toUpperCase())}</strong><div style="font-size:11px;opacity:.7">${safe(o.id)}</div></td><td>${safe(new Date(o.created_at).toLocaleString('pt-BR'))}</td><td>${(o.items||[]).map(i=>`<div>${safe(i.product_name)} × ${Number(i.quantity)||1}</div>`).join('')||'—'}</td><td>${money(o.total_cents)}</td><td>${safe(statusText[o.status]||o.status)}${['paid','fulfilled'].includes(o.status)?`<div><button class="btn btn-outline" type="button" data-order-delivery="${safe(o.id)}" style="margin-top:7px">Ver entrega</button></div>`:''}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;padding:28px">Você ainda não realizou compras.</td></tr>';
- }catch(e){if(seq===loadId)target.innerHTML='<tr><td colspan="5" style="text-align:center;padding:28px">'+safe(e.message)+'</td></tr>';}}
- document.addEventListener('click',async e=>{const button=e.target.closest('[data-order-delivery]');if(!button)return;const id=button.dataset.orderDelivery;try{const {data}=await sb.auth.getSession();const r=await fetch('/api/charge-status?orderId='+encodeURIComponent(id),{headers:{Authorization:'Bearer '+data.session.access_token}});const d=await r.json();if(!r.ok)throw new Error(d.error||'Entrega indisponível');const lines=(d.credentials||[]).map(x=>[x.username,x.password,x.details].filter(Boolean).join(' | '));const files=(d.deliveries||[]).map(x=>x.filename||x.file_name||'Arquivo disponível');window.kanekiNotify({title:'Entrega do pedido #'+id.slice(0,8),message:[...lines,...files].join('\n')||'Confira o status do pedido.',type:'success',images:[...(d.deliveries||[]),...(d.credentials||[])].map(x=>x.image_url||x.image||x.photo_url||x.product_image_url||x.product?.image_url).filter(Boolean)});}catch(err){alert(err.message)}});
- window.addEventListener('kaneki-orders-open',loadOrders);window.addEventListener('hashchange',()=>{if(location.hash==='#orders'){refreshAccountSession();loadOrders()}});window.addEventListener('focus',refreshAccountSession);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAccountSession()});
- window.addEventListener('kaneki-owner-auth',event=>{if(location.hash==='#orders'&&event.detail?.id)loadOrders();else if(location.hash==='#orders')tbody().innerHTML='<tr><td colspan="5" style="text-align:center;padding:28px">Entre na sua conta para visualizar seus pedidos.</td></tr>'});
- if(location.hash==='#orders')refreshAccountSession();
-})();
-</script>
-<style id="kaneki-chat-entry-style">
-#kaneki-chat-launch{position:fixed;right:20px;bottom:20px;z-index:9999;width:48px;height:48px;border:1px solid #a99bff;border-radius:50%;display:grid;place-items:center;color:white;background:linear-gradient(135deg,#764bff,#b63cf6);box-shadow:0 8px 28px #713bff88;font-size:22px;transition:transform .2s}
-#kaneki-chat-launch:hover{transform:scale(1.08)}#kaneki-admin-orb:not([hidden]):not([data-positioned]){bottom:82px}
-</style>
-<a id="kaneki-chat-launch" href="/chat.html" title="Abrir KANEKI CHAT" aria-label="Abrir chat e salas de voz">🎧</a>
-<style>.kc-profile-photo{display:flex;align-items:center;gap:12px;margin:12px 0 20px;color:#a9adc0;font-size:12px}.kc-profile-photo button{width:72px;height:72px;flex:none;border-radius:50%;border:2px solid #8b7dff;background:#272340;color:white;overflow:hidden;position:relative}.kc-profile-photo button:before{content:"📷";font-size:25px}.kc-profile-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.kc-profile-photo button:disabled{opacity:.5}</style>
-<script>
-(()=>{const btn=document.getElementById('kc-avatar-button'),file=document.getElementById('kc-avatar-input');if(!btn||!file)return;
-async function optimizeAvatar(original){if(original.size<=2*1024*1024)return original;
-const bitmap=await createImageBitmap(original);try{const canvas=document.createElement('canvas');const scale=Math.min(1,1600/Math.max(bitmap.width,bitmap.height));canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));const ctx=canvas.getContext('2d');ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
-for(const quality of [.88,.78,.65,.5,.35]){const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));if(blob&&blob.size<=2*1024*1024)return new File([blob],'avatar.jpg',{type:'image/jpeg'});}throw Error('Não foi possível reduzir a imagem para o limite de armazenamento.');}finally{bitmap.close();}}
-btn.onclick=()=>file.click();file.onchange=async()=>{const selected=file.files?.[0];if(!selected)return;if(!['image/png','image/jpeg','image/webp'].includes(selected.type)||selected.size>20*1024*1024){alert('Escolha JPG, PNG ou WEBP de até 20 MB.');file.value='';return}try{const sb=window.__ccgAdminBridge?.getClient?.();const currentUser=window.__ccgAdminBridge?.getUser?.();if(!sb||!currentUser)throw Error('Entre na conta primeiro.');btn.disabled=true;const f=await optimizeAvatar(selected);const ext=f.type==='image/png'?'png':f.type==='image/webp'?'webp':'jpg';const path=currentUser.id+'/avatar-'+Date.now()+'.'+ext;const {error}=await sb.storage.from('kc-avatars').upload(path,f,{contentType:f.type,upsert:false});if(error)throw error;const {data:link}=sb.storage.from('kc-avatars').getPublicUrl(path);const {data,error:authErr}=await sb.auth.updateUser({data:{avatar_url:link.publicUrl}});if(authErr)throw authErr;await window.__ccgAdminBridge?.refreshAccountSession?.();alert('Foto atualizada! Ela aparecerá na próxima sincronização da chamada.')}catch(e){alert('Não foi possível salvar a foto: '+e.message)}finally{btn.disabled=false;file.value=''}}})();
-</script><style id="kaneki-admin-black-lightning">
-#kaneki-admin-orb{overflow:visible!important;isolation:isolate;will-change:left,top}
-#kaneki-admin-orb::before{
- content:"";position:absolute;inset:-28px!important;z-index:-1;pointer-events:none;
- background:conic-gradient(from 5deg,#bfc1d4 0deg,#08080b 5deg,transparent 12deg 42deg,#c1c2d1 47deg,#030306 52deg,transparent 59deg 93deg,#c8cad6 98deg,#050508 103deg,transparent 111deg 143deg,#a7a9c3 148deg,#030307 153deg,transparent 160deg 190deg,#e1e1ec 196deg,#050507 201deg,transparent 208deg 240deg,#d5d5e5 247deg,#020205 252deg,transparent 260deg 291deg,#d3d5e4 297deg,#030305 303deg,transparent 310deg 337deg,#c4c5d7 343deg,#050507 348deg,transparent 355deg);
- clip-path:polygon(50% 0%,57% 31%,73% 3%,65% 34%,98% 19%,72% 45%,100% 54%,71% 59%,93% 91%,59% 72%,49% 100%,44% 72%,12% 94%,30% 61%,0 54%,30% 44%,4% 15%,37% 34%);
- filter:drop-shadow(0 0 2px #d9d9eb) drop-shadow(0 0 8px #606073);
- opacity:1!important;animation:kanekiRayPulse 1.4s ease-in-out infinite alternate!important;
-}
-#kaneki-admin-orb::after{pointer-events:none!important}
-@keyframes kanekiRayPulse{from{transform:rotate(-12deg) scale(.86);opacity:.75}to{transform:rotate(10deg) scale(1.14);opacity:1}}
-@media(prefers-reduced-motion:reduce){#kaneki-admin-orb::before{animation:none!important}}
-</style><style>#kaneki-admin-orb[data-positioned]{bottom:auto!important;right:auto!important}#kaneki-admin-orb{pointer-events:auto!important}</style><script src="/kaneki-notifications.js"></script><script id="kc-design-public-script">
-(()=>{'use strict';const URL='https://fwbbzolbuapzylkfrnxw.supabase.co',KEY='sb_publishable_hX1nxQNKblrtsWP0HjsgzA_i5pf1VaJ';
-const color=(x,f)=>/^#[0-9a-f]{6}$/i.test(x||'')?x:f;
-function apply(s){if(!s)return;const r=document.documentElement.style;r.setProperty('--site-primary',color(s.primary_color,'#7165ff'));r.setProperty('--accent',color(s.primary_color,'#7165ff'));r.setProperty('--kc-lightning',color(s.lightning_color,'#8b7dff'));r.setProperty('--kc-lightning-opacity',String(Math.min(1,Math.max(0,Number(s.lightning_opacity??.6)))));r.setProperty('--kc-lightning-speed',Math.min(20,Math.max(1,Number(s.lightning_speed)||5))+'s');r.setProperty('--kc-design-bg-opacity',String(Math.min(1,Math.max(0,Number(s.background_opacity??.3)))));r.setProperty('--kc-design-radius',Math.min(50,Math.max(0,Number(s.logo_radius??12)))+'px');document.body.classList.toggle('kc-rays-on',!!s.lightning_enabled);if(s.background_image&&(/^(https:\/\/|data:image\/(png|jpeg|webp);base64,)/i).test(s.background_image))r.setProperty('--kc-design-bg-image',`url("${s.background_image.replace(/["\\]/g,'')}")`);else r.setProperty('--kc-design-bg-image','none');document.querySelectorAll('.brand-mark').forEach(el=>{if(s.logo_image&&/^(https:\/\/|data:image\/(png|jpeg|webp);base64,)/i.test(s.logo_image)){el.replaceChildren();const img=document.createElement('img');img.className='kc-logo-img';img.alt='Logo da loja';img.src=s.logo_image;el.append(img)}else{el.textContent='CCG'}})}
-async function load(){try{const res=await fetch(URL+'/rest/v1/kaneki_site_design?id=eq.1&select=*',{headers:{apikey:KEY,Authorization:'Bearer '+KEY}});if(!res.ok)return;const rows=await res.json();apply(rows?.[0])}catch(e){console.warn('Personalização indisponível',e)}}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
-})();</script></body></html>
+ async function loadList(){const p=ensurePanel();p.style.display='block';document.get
