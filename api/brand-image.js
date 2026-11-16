@@ -3,7 +3,7 @@ import {createClient} from '@supabase/supabase-js';
 // GET /api/brand-image?kind=share|icon
 // Public images only. Never returns user information or service credentials.
 export default async function handler(req,res){
-  res.setHeader('Cache-Control','public, max-age=60, s-maxage=60');
+  res.setHeader('Cache-Control','no-store, max-age=0, must-revalidate');
   res.setHeader('X-Content-Type-Options','nosniff');
   const kind=String(req.query?.kind||'share').toLowerCase()==='icon'?'icon':'share';
   const origin='https://ccgquinques-dun.vercel.app';
